@@ -17,7 +17,7 @@
                     <li class="nav-item"><a class="nav-link" href="{% url 'product-list' %}">Produits</a></li>
                     <li><a class="nav-link" href="{% url 'items-list' %}">Items</a></li>
                     <li><a class="nav-link" href="{% url 'attributes-list' %}">Attributes</a></li>
-                    <li><a class="nav-link" href="{% url 'attributeValue-list' %}">Attributes Values</a></li>
+                    <!-- <li><a class="nav-link" href="{% url 'attributeValue-list' %}">Attributes Values</a></li> -->
                     {% if user.is_authenticated %}
                     <li class="nav-item">
                     <a class="nav-link" href="{% url 'logout' %}">Déconnexion</a>
