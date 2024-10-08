@@ -1,0 +1,1 @@
+pour plus trad: afficher les boutons modoif / create / delete seulement pour les admin
