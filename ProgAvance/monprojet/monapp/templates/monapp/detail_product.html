@@ -3,17 +3,32 @@
 Mon application DJANGO
 {% endblock %}
 {% block menu %}
-<h1>{{titremenu}}</h1>
+<h1>{{ titremenu }}</h1>
 {% endblock %}
 {% block contenu %}
 <h2>{{ product.name }}</h2>
 <ul>
-<li>Code : {{ product.code }}</li>
-<li>Prix HT : {{ product.price_ht }}</li>
-<li>Prix TTC: {{ product.price_ttc }}</li>
-<li>Date de création : {{ product.date_creation }}</li>
+    <li>Code : {{ product.code }}</li>
+    <!-- <li>Prix HT : {{ product.price_ht }}</li>
+    <li>Prix TTC: {{ product.price_ttc }}</li> -->
+    <li>Date de création : {{ product.date_creation }}</li>
+    <li>Stock : {{ product.stock }}</li>
 </ul>
-<p><a href="{% url 'product-update' product.id %}" class="btn btn-primary">modifier</a></p>
-<p><a href="{% url 'product-delete' product.id %}" class="btn btn-danger">supprimer</a></p>
+
+<h3>Fournisseurs</h3>
+<ul>
+    {% for fournisseur_produit in product.fournisseurproduit_set.all %}
+        <li>
+            Fournisseur : {{ fournisseur_produit.fournisseur.nom }} <br>
+            Adresse : {{ fournisseur_produit.fournisseur.adresse }} <br>
+            Prix du fournisseur : {{ fournisseur_produit.prix }} €
+        </li>
+    {% empty %}
+        <li>Aucun fournisseur associé à ce produit</li>
+    {% endfor %}
+</ul>
+
+<p><a href="{% url 'product-update' product.id %}" class="btn btn-primary">Modifier</a></p>
+<p><a href="{% url 'product-delete' product.id %}" class="btn btn-danger">Supprimer</a></p>
 <p><a href="{% url 'product-list' %}">Retour à la liste des produits</a></p>
 {% endblock %}

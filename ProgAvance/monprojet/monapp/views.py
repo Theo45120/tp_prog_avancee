@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
 from django.core.mail import send_mail
 
-from .forms import AttributeForm, ContactUsForm, ItemForm, ProductForm
+from .forms import AttributeForm, ContactUsForm, ItemForm, ProductForm, ProductUpdateForm
 from django.forms.models import BaseModelForm
 from django.urls import reverse_lazy
 
@@ -243,12 +243,13 @@ class ProductCreateView(CreateView):
 @method_decorator(login_required, name='dispatch')
 class ProductUpdateView(UpdateView):
     model = Product  # Define the model you're working with
-    form_class = ProductForm  # Define the form class you're using
+    form_class = ProductUpdateForm  # Define the form class you're using
     template_name = 'monapp/update_product.html'  # Define the template for rendering
     
     def form_valid(self, form: BaseModelForm) -> HttpResponse:
         product = form.save()
         return redirect('product-detail', product.id)
+
 
 # Ajout du décorateur login_required à une CBV
 @method_decorator(login_required, name='dispatch')
