@@ -26,8 +26,6 @@ Produit : nom, code, etc.
 class Product(models.Model):
     name          = models.CharField(max_length=100)
     code          = models.CharField(max_length=10, null=True, blank=True, unique=True)
-    price_ht      = models.DecimalField(max_digits=8, decimal_places=2,  null=True, blank=True, verbose_name="Prix unitaire HT")
-    price_ttc     = models.DecimalField(max_digits=8, decimal_places=2,  null=True, blank=True, verbose_name="Prix unitaire TTC")
     status        = models.SmallIntegerField(choices=PRODUCT_STATUS, default=0)
     date_creation = models.DateTimeField(default=timezone.now, blank=True, verbose_name="Date création")
     fournisseurs  = models.ManyToManyField('Fournisseur', through='FournisseurProduit')
@@ -104,7 +102,7 @@ class Fournisseur(models.Model):
 class FournisseurProduit(models.Model):
     produit = models.ForeignKey(Product, on_delete=models.CASCADE)
     fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
-    prix = models.DecimalField(max_digits=10, decimal_places=2)  # Prix spécifique par fournisseur
+    price_ttc = models.DecimalField(max_digits=8, decimal_places=2,  null=True, blank=True, verbose_name="Prix unitaire TTC")
     stock = models.IntegerField(default=0)  # Stock spécifique au fournisseur pour ce produit
 
     class Meta:

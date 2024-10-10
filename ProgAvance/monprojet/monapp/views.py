@@ -104,33 +104,30 @@ class HomeViewParam(TemplateView):
     def post(self, request, **kwargs):
         return render(request, self.template_name) 
 
+from django.db.models import Min
+
+from django.db.models import Min
+
+from django.views.generic import ListView
+from .models import Product
+
 class ProductListView(ListView):
     model = Product
     template_name = "monapp/list_products.html"
     context_object_name = "products"
 
     def get_queryset(self):
-        # Fetch the products with their lowest supplier price
+        # Récupérer tous les produits sans tri particulier
         query = self.request.GET.get('search')
-        
-        # Start with base queryset
         queryset = Product.objects.all()
-        
-        # Annotate each product with the lowest price from FournisseurProduit
-        queryset = queryset.annotate(
-            min_price=Min('fournisseurproduit__prix')
-        )
-        
-        # Filter by search query if present
+
+        # Si une recherche est faite, filtrer par le nom
         if query:
             queryset = queryset.filter(name__icontains=query)
-        
+
         return queryset
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['titremenu'] = "Liste des produits"
-        return context
+
 
 class ProductDetailView(DetailView):
     model = Product
@@ -256,7 +253,6 @@ class ProductUpdateView(UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
         # Récupérer les fournisseurs qui ne sont pas encore associés à ce produit
         context['fournisseurs_non_associes'] = Fournisseur.objects.exclude(
             id__in=self.object.fournisseurproduit_set.values_list('fournisseur_id', flat=True)
@@ -265,21 +261,38 @@ class ProductUpdateView(UpdateView):
 
     def form_valid(self, form):
         product = form.save()
-
         # Mise à jour des fournisseurs déjà associés
         for fournisseur_produit in product.fournisseurproduit_set.all():
-            fournisseur_produit.prix = self.request.POST.get(f"fournisseur_prix_{fournisseur_produit.fournisseur.id}")
-            fournisseur_produit.stock = self.request.POST.get(f"fournisseur_stock_{fournisseur_produit.fournisseur.id}")
-            fournisseur_produit.save()
-
+            new_prix = self.request.POST.get(f"fournisseur_prix_{fournisseur_produit.fournisseur.id}")
+            new_stock = self.request.POST.get(f"fournisseur_stock_{fournisseur_produit.fournisseur.id}")
+            if new_prix and new_stock:
+                fournisseur_produit.price_ttc = new_prix
+                difference_stock = int(new_stock) - fournisseur_produit.stock
+                fournisseur_produit.stock = new_stock
+                fournisseur_produit.save()
+                # Si le stock a augmenté, créer une commande
+                if difference_stock > 0:
+                    Commande.objects.create(
+                        produit=product,
+                        fournisseur=fournisseur_produit.fournisseur,
+                        quantite=difference_stock,
+                        statut='en_preparation'  # Initialement, la commande est en préparation
+                    )
         # Ajout de nouveaux fournisseurs avec leur prix et stock
         for fournisseur in Fournisseur.objects.all():
-            prix = self.request.POST.get(f"new_fournisseur_prix_{fournisseur.id}")
+            price_ttc = self.request.POST.get(f"new_fournisseur_prix_{fournisseur.id}")
             stock = self.request.POST.get(f"new_fournisseur_stock_{fournisseur.id}")
-            if prix and stock:
-                FournisseurProduit.objects.create(produit=product, fournisseur=fournisseur, prix=prix, stock=stock)
-
+            if price_ttc and stock:
+                fournisseur_produit = FournisseurProduit.objects.create(produit=product, fournisseur=fournisseur, price_ttc=price_ttc, stock=stock)
+                # Créer une commande pour les nouveaux stocks
+                Commande.objects.create(
+                    produit=product,
+                    fournisseur=fournisseur,
+                    quantite=stock,
+                    statut='en_preparation'  # Initialement, la commande est en préparation
+                )
         return redirect('product-detail', product.id)
+
 
 
 

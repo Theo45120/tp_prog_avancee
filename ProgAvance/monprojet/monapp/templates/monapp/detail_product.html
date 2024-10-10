@@ -9,8 +9,6 @@ Mon application DJANGO
 <h2>{{ product.name }}</h2>
 <ul>
     <li>Code : {{ product.code }}</li>
-    <li>Prix HT : {{ product.price_ht }}</li>
-    <li>Prix TTC: {{ product.price_ttc }}</li>
 </ul>
 
 <h3>Fournisseurs et stocks</h3>
@@ -18,7 +16,7 @@ Mon application DJANGO
     {% for fournisseur_produit in product.fournisseurproduit_set.all %}
         <li>
             Fournisseur : {{ fournisseur_produit.fournisseur.nom }} <br>
-            Prix du fournisseur : {{ fournisseur_produit.prix }} € <br>
+            Prix du fournisseur : {{ fournisseur_produit.price_ttc }} € <br>
             Stock disponible : {{ fournisseur_produit.stock }}
         </li>
     {% empty %}

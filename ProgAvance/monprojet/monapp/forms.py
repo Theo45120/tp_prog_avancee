@@ -10,7 +10,7 @@ class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = '__all__'
-        exclude = ('price_ttc', 'status')
+        exclude = ('status',)
 
 class ItemForm(forms.ModelForm):
     class Meta:
@@ -26,7 +26,7 @@ class AttributeForm(forms.ModelForm):
 class ProductUpdateForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'code', 'price_ht', 'price_ttc', 'status']  # Champs de base du produit
+        fields = ['name', 'code','status']  # Champs de base du produit
 
     # Champ supplémentaire pour les fournisseurs et le stock
     fournisseur_data = forms.CharField(widget=forms.HiddenInput(), required=False)  # Pour gérer les fournisseurs et le stock en JS
