@@ -239,29 +239,41 @@ class ProductCreateView(CreateView):
         product = form.save()
         return redirect('product-detail', product.id)
 
-# Ajout du décorateur login_required à une CBV
+
 @method_decorator(login_required, name='dispatch')
 class ProductUpdateView(UpdateView):
     model = Product
     form_class = ProductUpdateForm
     template_name = 'monapp/update_product.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Récupérer les fournisseurs qui ne sont pas encore associés à ce produit
+        context['fournisseurs_non_associes'] = Fournisseur.objects.exclude(
+            id__in=self.object.fournisseurproduit_set.values_list('fournisseur_id', flat=True)
+        )
+        return context
+
     def form_valid(self, form):
-        # Sauvegarder le produit
         product = form.save()
 
-        # Parcourir les fournisseurs et mettre à jour le prix et le stock
+        # Mise à jour des fournisseurs déjà associés
         for fournisseur_produit in product.fournisseurproduit_set.all():
-            # Récupérer les valeurs du stock et du prix soumises via le formulaire
-            prix = self.request.POST.get(f"fournisseur_prix_{fournisseur_produit.fournisseur.id}")
-            stock = self.request.POST.get(f"fournisseur_stock_{fournisseur_produit.fournisseur.id}")
-
-            # Mettre à jour le prix et le stock pour chaque fournisseur
-            fournisseur_produit.prix = prix
-            fournisseur_produit.stock = stock
+            fournisseur_produit.prix = self.request.POST.get(f"fournisseur_prix_{fournisseur_produit.fournisseur.id}")
+            fournisseur_produit.stock = self.request.POST.get(f"fournisseur_stock_{fournisseur_produit.fournisseur.id}")
             fournisseur_produit.save()
 
+        # Ajout de nouveaux fournisseurs avec leur prix et stock
+        for fournisseur in Fournisseur.objects.all():
+            prix = self.request.POST.get(f"new_fournisseur_prix_{fournisseur.id}")
+            stock = self.request.POST.get(f"new_fournisseur_stock_{fournisseur.id}")
+            if prix and stock:
+                FournisseurProduit.objects.create(produit=product, fournisseur=fournisseur, prix=prix, stock=stock)
+
         return redirect('product-detail', product.id)
+
+
 
 
 

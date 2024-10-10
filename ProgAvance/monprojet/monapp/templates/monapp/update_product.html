@@ -5,7 +5,7 @@
     {% csrf_token %}
     {{ form.as_p }}
 
-    <h3>Fournisseurs et Stock</h3>
+    <h3>Fournisseurs déjà associés</h3>
     <table class="table">
         <thead>
             <tr>
@@ -18,8 +18,28 @@
             {% for fournisseur_produit in product.fournisseurproduit_set.all %}
             <tr>
                 <td>{{ fournisseur_produit.fournisseur.nom }}</td>
-                <td><input type="number" name="fournisseur_prix_{{ fournisseur_produit.fournisseur.id }}" value="{{ fournisseur_produit.prix }}" class="form-control"></td>
+                <td><input type="number" name="fournisseur_prix_{{ fournisseur_produit.fournisseur.id }}" value="{{ fournisseur_produit.prix }}" class="form-control" step="0.01"></td>
                 <td><input type="number" name="fournisseur_stock_{{ fournisseur_produit.fournisseur.id }}" value="{{ fournisseur_produit.stock }}" class="form-control"></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Ajouter des Fournisseurs</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fournisseur</th>
+                <th>Prix</th>
+                <th>Stock</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fournisseur in fournisseurs_non_associes %}
+            <tr>
+                <td>{{ fournisseur.nom }}</td>
+                <td><input type="number" name="new_fournisseur_prix_{{ fournisseur.id }}" class="form-control" step="0.01"></td>
+                <td><input type="number" name="new_fournisseur_stock_{{ fournisseur.id }}" class="form-control"></td>
             </tr>
             {% endfor %}
         </tbody>
