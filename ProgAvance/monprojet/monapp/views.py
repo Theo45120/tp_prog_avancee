@@ -1,7 +1,7 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
 from .models import *
-
+from django.db.models import Min
 from django.views.generic import *
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -14,6 +14,7 @@ from django.urls import reverse_lazy
 
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+import time
 
 """ def home(request):
     if request.GET and request.GET["test"]:
@@ -108,19 +109,26 @@ class ProductListView(ListView):
     template_name = "monapp/list_products.html"
     context_object_name = "products"
 
-    def get_queryset(self ):
-        # Surcouche pour filtrer les résultats en fonction de la recherche
-        # Récupérer le terme de recherche depuis la requête GET
+    def get_queryset(self):
+        # Fetch the products with their lowest supplier price
         query = self.request.GET.get('search')
-        if query:
-        # Filtre les produits par nom (insensible à la casse)
-            return Product.objects.filter(name__icontains=query)
         
-        # Si aucun terme de recherche, retourner tous les produits
-        return Product.objects.all()
-    
+        # Start with base queryset
+        queryset = Product.objects.all()
+        
+        # Annotate each product with the lowest price from FournisseurProduit
+        queryset = queryset.annotate(
+            min_price=Min('fournisseurproduit__prix')
+        )
+        
+        # Filter by search query if present
+        if query:
+            queryset = queryset.filter(name__icontains=query)
+        
+        return queryset
+
     def get_context_data(self, **kwargs):
-        context = super(ProductListView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context['titremenu'] = "Liste des produits"
         return context
 
@@ -446,3 +454,20 @@ class ProductAttributeValueDetailView(DetailView):
         context = super(ProductAttributeValueDetailView, self).get_context_data(**kwargs)
         context['titremenu'] = "Détail déclinaison"
         return context
+
+def avancer_commande(request, commande_id):
+    commande = get_object_or_404(Commande, id=commande_id)
+
+    # Si la commande est encore en préparation
+    if commande.statut == 'en_preparation':
+        commande.statut = 'passee'
+        commande.save()
+        time.sleep(20)  # Attendre 20 secondes avant de passer à l'étape suivante
+
+    # Si la commande est passée mais pas encore reçue
+    if commande.statut == 'passee':
+        commande.statut = 'recue'
+        commande.save()
+        time.sleep(20)  # Attendre 20 secondes avant de marquer la commande comme reçue
+
+    return redirect('commande-detail', commande_id=commande.id)  # Redirige vers le détail de la commande après mise à jour

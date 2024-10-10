@@ -19,8 +19,7 @@ Mon application DJANGO
 <thead>
 <th>Nom</th>
 <th>Code</th>
-<th>Prix HT</th>
-<th>Prix TTC</th>
+<th>Prix</th>
 <th>Date Création</th>
 <th>Modifier</th>
 <th>Supprimer</th>
@@ -30,8 +29,13 @@ Mon application DJANGO
 <tr>
 <td><a href="{% url 'product-detail' prdct.id %}" class="btn btn-primary">{{ prdct.name }}</a></td>
 <td>{{ prdct.code }} </td>
-<td>{{ prdct.price_ht }} </td>
-<td>{{ prdct.price_ttc }} </td>
+<td>
+    {% if prdct.min_price %}
+        {{ prdct.min_price }} €
+    {% else %}
+        Non disponible
+    {% endif %}
+</td>
 <td>{{ prdct.date_creation }} </td>
 <td><a href="{% url 'product-update' prdct.id %}" class="btn btn-warning">modifier</a></td>
 <td><a href="{% url 'product-delete' prdct.id %}" class="btn btn-danger">supprimer</a></td>
@@ -40,15 +44,4 @@ Mon application DJANGO
 </tbody>
 </table>
 <p><a href="{% url 'product-add' %}" class="btn btn-primary">Créer un nouveau produit</a></p>
-<p>
-    J'ai
-    {% if prdcts|length < 5 %}
-    peu de
-    {% elif prdcts|length < 10 %}
-    quelques
-    {% else %}
-    beaucoup de
-    {% endif %}
-    produits préférés.
-</p>
 {% endblock %}

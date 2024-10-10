@@ -1,0 +1,20 @@
+{% extends 'monapp/base.html' %}
+{% block title %}
+Mon application DJANGO
+{% endblock %}
+{% block menu %}
+<h1>{{ titremenu }}</h1>
+{% endblock %}
+{% block contenu %}
+<h2>Détails de la commande</h2>
+<p>Produit : {{ commande.produit.name }}</p>
+<p>Fournisseur : {{ commande.fournisseur.nom }}</p>
+<p>Quantité : {{ commande.quantite }}</p>
+<p>Statut actuel : {{ commande.get_statut_display }}</p>
+
+{% if commande.statut != 'recue' %}
+    <a href="{% url 'avancer-commande' commande.id %}" class="btn btn-primary">Avancer la commande</a>
+{% else %}
+    <p>La commande est déjà reçue.</p>
+{% endif %}
+{% endblock %}
