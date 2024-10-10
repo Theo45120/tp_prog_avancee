@@ -16,6 +16,9 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 import time
 
+from django.http import JsonResponse
+
+
 """ def home(request):
     if request.GET and request.GET["test"]:
         raise Http404
@@ -261,37 +264,52 @@ class ProductUpdateView(UpdateView):
 
     def form_valid(self, form):
         product = form.save()
-        # Mise à jour des fournisseurs déjà associés
+
+        # Mise à jour des fournisseurs déjà associés (sans ajouter au stock deux fois)
         for fournisseur_produit in product.fournisseurproduit_set.all():
             new_prix = self.request.POST.get(f"fournisseur_prix_{fournisseur_produit.fournisseur.id}")
             new_stock = self.request.POST.get(f"fournisseur_stock_{fournisseur_produit.fournisseur.id}")
-            if new_prix and new_stock:
+
+            if new_prix:
                 fournisseur_produit.price_ttc = new_prix
-                difference_stock = int(new_stock) - fournisseur_produit.stock
-                fournisseur_produit.stock = new_stock
-                fournisseur_produit.save()
-                # Si le stock a augmenté, créer une commande
-                if difference_stock > 0:
-                    Commande.objects.create(
-                        produit=product,
-                        fournisseur=fournisseur_produit.fournisseur,
-                        quantite=difference_stock,
-                        statut='en_preparation'  # Initialement, la commande est en préparation
-                    )
-        # Ajout de nouveaux fournisseurs avec leur prix et stock
+
+            # Calculer la différence de stock (si le nouveau stock est plus élevé)
+            difference_stock = int(new_stock) - fournisseur_produit.stock
+            if difference_stock > 0:
+                # Ne pas directement toucher au stock ici
+                # Créer uniquement la commande pour gérer l'ajout du stock plus tard
+                Commande.objects.create(
+                    produit=product,
+                    fournisseur=fournisseur_produit.fournisseur,
+                    quantite=difference_stock,
+                    statut='en_preparation'  # La commande commence en préparation
+                )
+
+        # Ajout de nouveaux fournisseurs avec leur prix (sans modifier directement le stock ici)
         for fournisseur in Fournisseur.objects.all():
             price_ttc = self.request.POST.get(f"new_fournisseur_prix_{fournisseur.id}")
             stock = self.request.POST.get(f"new_fournisseur_stock_{fournisseur.id}")
+
             if price_ttc and stock:
-                fournisseur_produit = FournisseurProduit.objects.create(produit=product, fournisseur=fournisseur, price_ttc=price_ttc, stock=stock)
-                # Créer une commande pour les nouveaux stocks
+                # Créer la relation fournisseur-produit avec le stock à 0
+                fournisseur_produit = FournisseurProduit.objects.create(
+                    produit=product,
+                    fournisseur=fournisseur,
+                    price_ttc=price_ttc,
+                    stock=0  # Stock initial à 0, il sera ajouté via la commande
+                )
+
+                # Créer une commande pour le nouveau stock (avec statut en préparation)
                 Commande.objects.create(
                     produit=product,
                     fournisseur=fournisseur,
-                    quantite=stock,
-                    statut='en_preparation'  # Initialement, la commande est en préparation
+                    quantite=int(stock),
+                    statut='en_preparation'
                 )
+
         return redirect('product-detail', product.id)
+
+
 
 
 
@@ -484,3 +502,17 @@ def avancer_commande(request, commande_id):
         time.sleep(20)  # Attendre 20 secondes avant de marquer la commande comme reçue
 
     return redirect('commande-detail', commande_id=commande.id)  # Redirige vers le détail de la commande après mise à jour
+
+
+## POUR AJAX,
+def actualiser_statut_commande(request, commande_id):
+    commande = Commande.objects.get(id=commande_id)
+    # Change le statut automatiquement
+    commande.changer_statut_automatiquement()
+    return JsonResponse({'statut': commande.statut})
+
+
+class CommandeListView(ListView):
+    model = Commande
+    template_name = 'monapp/list_commande.html'
+    context_object_name = 'commandes'

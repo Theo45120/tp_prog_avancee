@@ -4,6 +4,7 @@ from django.urls import path
 from monapp import admin
 from .import views
 from django.views.generic import *
+from .views import actualiser_statut_commande
 
 urlpatterns=[
     #path("", views.home, name="home"),
@@ -44,5 +45,10 @@ urlpatterns=[
     path("attributValue/list",views.ProductAttributeValueListView.as_view(), name="attributeValue-list"),
     path("attributValue/<pk>",views.ProductAttributeValueDetailView.as_view(), name="attributeValue-detail"),
     path('commande/<int:commande_id>/avancer/', views.avancer_commande, name='avancer-commande'),
+
+
+    # URL de l'api AJAX
+    path('commande/<int:commande_id>/actualiser_statut/', actualiser_statut_commande, name='actualiser-statut-commande'),
+    path('commandes/', views.CommandeListView.as_view(), name='commande-list'),
 
 ]
