@@ -9,26 +9,25 @@ Mon application DJANGO
 <h2>{{ product.name }}</h2>
 <ul>
     <li>Code : {{ product.code }}</li>
-    <!-- <li>Prix HT : {{ product.price_ht }}</li>
-    <li>Prix TTC: {{ product.price_ttc }}</li> -->
-    <li>Date de création : {{ product.date_creation }}</li>
-    <li>Stock : {{ product.stock }}</li>
+    <li>Prix HT : {{ product.price_ht }}</li>
+    <li>Prix TTC: {{ product.price_ttc }}</li>
 </ul>
 
-<h3>Fournisseurs</h3>
+<h3>Fournisseurs et stocks</h3>
 <ul>
     {% for fournisseur_produit in product.fournisseurproduit_set.all %}
         <li>
             Fournisseur : {{ fournisseur_produit.fournisseur.nom }} <br>
-            Adresse : {{ fournisseur_produit.fournisseur.adresse }} <br>
-            Prix du fournisseur : {{ fournisseur_produit.prix }} €
+            Prix du fournisseur : {{ fournisseur_produit.prix }} € <br>
+            Stock disponible : {{ fournisseur_produit.stock }}
         </li>
     {% empty %}
         <li>Aucun fournisseur associé à ce produit</li>
     {% endfor %}
-</ul>
+</ul> 
 
 <p><a href="{% url 'product-update' product.id %}" class="btn btn-primary">Modifier</a></p>
 <p><a href="{% url 'product-delete' product.id %}" class="btn btn-danger">Supprimer</a></p>
 <p><a href="{% url 'product-list' %}">Retour à la liste des produits</a></p>
+
 {% endblock %}

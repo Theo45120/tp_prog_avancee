@@ -1,9 +1,30 @@
 {% extends 'monapp/base.html' %}
 {% block contenu %}
 <h1> Modification d'un produit </h1>
-<form action="" method="post" >
+<form action="" method="post">
     {% csrf_token %}
     {{ form.as_p }}
+
+    <h3>Fournisseurs et Stock</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fournisseur</th>
+                <th>Prix</th>
+                <th>Stock</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fournisseur_produit in product.fournisseurproduit_set.all %}
+            <tr>
+                <td>{{ fournisseur_produit.fournisseur.nom }}</td>
+                <td><input type="number" name="fournisseur_prix_{{ fournisseur_produit.fournisseur.id }}" value="{{ fournisseur_produit.prix }}" class="form-control"></td>
+                <td><input type="number" name="fournisseur_stock_{{ fournisseur_produit.fournisseur.id }}" value="{{ fournisseur_produit.stock }}" class="form-control"></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
     <button type="submit" class="btn btn-success mt-2">Modifier</button>
 </form>
 {% endblock %}

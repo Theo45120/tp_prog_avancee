@@ -24,26 +24,19 @@ class Status(models.Model):
 Produit : nom, code, etc.
 """
 class Product(models.Model):
-
-    class Meta:
-        verbose_name = "Produit"
-
     name          = models.CharField(max_length=100)
     code          = models.CharField(max_length=10, null=True, blank=True, unique=True)
     price_ht      = models.DecimalField(max_digits=8, decimal_places=2,  null=True, blank=True, verbose_name="Prix unitaire HT")
     price_ttc     = models.DecimalField(max_digits=8, decimal_places=2,  null=True, blank=True, verbose_name="Prix unitaire TTC")
     status        = models.SmallIntegerField(choices=PRODUCT_STATUS, default=0)
     date_creation = models.DateTimeField(default=timezone.now, blank=True, verbose_name="Date création")
-    stock         = models.IntegerField(default=0)  # Stock actuel du produit
-    fournisseurs  = models.ManyToManyField('Fournisseur', through='FournisseurProduit')  # Relation avec les fournisseurs
+    fournisseurs  = models.ManyToManyField('Fournisseur', through='FournisseurProduit')
 
     def __str__(self):
         return "{0} {1}".format(self.name, self.code)
 
-    def mettre_a_jour_stock(self, quantite):
-        """Met à jour le stock du produit en ajoutant la quantité."""
-        self.stock += quantite
-        self.save()
+    # Suppression de la méthode de mise à jour du stock ici, car le stock est géré dans FournisseurProduit
+
 
 
 """
@@ -112,12 +105,18 @@ class FournisseurProduit(models.Model):
     produit = models.ForeignKey(Product, on_delete=models.CASCADE)
     fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE)
     prix = models.DecimalField(max_digits=10, decimal_places=2)  # Prix spécifique par fournisseur
+    stock = models.IntegerField(default=0)  # Stock spécifique au fournisseur pour ce produit
 
     class Meta:
         unique_together = ('produit', 'fournisseur')
 
     def __str__(self):
         return f"{self.produit.name} par {self.fournisseur.nom}"
+
+    def mettre_a_jour_stock(self, quantite):
+        """Met à jour le stock du produit pour ce fournisseur."""
+        self.stock += quantite
+        self.save()
 
 
 """
@@ -140,7 +139,9 @@ class Commande(models.Model):
         return f"Commande de {self.produit.name} ({self.quantite}) chez {self.fournisseur.nom}"
 
     def save(self, *args, **kwargs):
-        # Met à jour le stock lorsque la commande passe à l'état "reçue"
+        # Met à jour le stock du fournisseur-produit lorsque la commande passe à l'état "reçue"
         if self.pk and self.statut == 'recue':
-            self.produit.mettre_a_jour_stock(self.quantite)
+            # Trouver l'entrée FournisseurProduit associée à cette commande
+            fournisseur_produit = FournisseurProduit.objects.get(produit=self.produit, fournisseur=self.fournisseur)
+            fournisseur_produit.mettre_a_jour_stock(self.quantite)
         super().save(*args, **kwargs)

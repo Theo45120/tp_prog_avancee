@@ -26,24 +26,21 @@ class AttributeForm(forms.ModelForm):
 class ProductUpdateForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'code', 'price_ht', 'price_ttc', 'status', 'fournisseurs']
+        fields = ['name', 'code', 'price_ht', 'price_ttc', 'status']  # Champs de base du produit
 
-    # Ajouter un champ pour gérer les prix des fournisseurs
-    fournisseur_prix = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
+    # Champ supplémentaire pour les fournisseurs et le stock
+    fournisseur_data = forms.CharField(widget=forms.HiddenInput(), required=False)  # Pour gérer les fournisseurs et le stock en JS
 
     def save(self, commit=True):
         product = super().save(commit=False)
-        # Gérer l'association des fournisseurs et leurs prix
-        fournisseur_ids = self.cleaned_data['fournisseurs']
-        prix = self.cleaned_data['fournisseur_prix']
-
-        for fournisseur in fournisseur_ids:
-            FournisseurProduit.objects.create(
-                produit=product,
-                fournisseur=fournisseur,
-                prix=prix  # Le prix doit être fourni
-            )
-
+        
+        # Sauvegarde du produit
         if commit:
             product.save()
+
+        # Sauvegarde des relations fournisseur-produit (incluant le stock)
+        if 'fournisseur_data' in self.cleaned_data:
+            fournisseur_data = self.cleaned_data['fournisseur_data']
+            # Process the fournisseur_data (you might need to parse JSON or a string here)
+        
         return product

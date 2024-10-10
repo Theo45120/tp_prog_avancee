@@ -242,13 +242,27 @@ class ProductCreateView(CreateView):
 # Ajout du décorateur login_required à une CBV
 @method_decorator(login_required, name='dispatch')
 class ProductUpdateView(UpdateView):
-    model = Product  # Define the model you're working with
-    form_class = ProductUpdateForm  # Define the form class you're using
-    template_name = 'monapp/update_product.html'  # Define the template for rendering
-    
-    def form_valid(self, form: BaseModelForm) -> HttpResponse:
+    model = Product
+    form_class = ProductUpdateForm
+    template_name = 'monapp/update_product.html'
+
+    def form_valid(self, form):
+        # Sauvegarder le produit
         product = form.save()
+
+        # Parcourir les fournisseurs et mettre à jour le prix et le stock
+        for fournisseur_produit in product.fournisseurproduit_set.all():
+            # Récupérer les valeurs du stock et du prix soumises via le formulaire
+            prix = self.request.POST.get(f"fournisseur_prix_{fournisseur_produit.fournisseur.id}")
+            stock = self.request.POST.get(f"fournisseur_stock_{fournisseur_produit.fournisseur.id}")
+
+            # Mettre à jour le prix et le stock pour chaque fournisseur
+            fournisseur_produit.prix = prix
+            fournisseur_produit.stock = stock
+            fournisseur_produit.save()
+
         return redirect('product-detail', product.id)
+
 
 
 # Ajout du décorateur login_required à une CBV
