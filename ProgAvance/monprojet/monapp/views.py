@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
 from .models import *
@@ -107,30 +108,33 @@ class HomeViewParam(TemplateView):
     def post(self, request, **kwargs):
         return render(request, self.template_name) 
 
-from django.db.models import Min
-
-from django.db.models import Min
-
-from django.views.generic import ListView
-from .models import Product
-
 class ProductListView(ListView):
     model = Product
     template_name = "monapp/list_products.html"
     context_object_name = "products"
 
     def get_queryset(self):
-        # Récupérer tous les produits sans tri particulier
+        # Fetch the products with their lowest supplier price
         query = self.request.GET.get('search')
+        
+        # Start with base queryset
         queryset = Product.objects.all()
-
-        # Si une recherche est faite, filtrer par le nom
+        
+        # Annotate each product with the lowest price from FournisseurProduit
+        queryset = queryset.annotate(
+            min_price=Min('fournisseurproduit__price_ttc')
+        )
+        
+        # Filter by search query if present
         if query:
             queryset = queryset.filter(name__icontains=query)
-
+        
         return queryset
 
-
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['titremenu'] = "Liste des produits"
+        return context
 
 class ProductDetailView(DetailView):
     model = Product
@@ -271,7 +275,7 @@ class ProductUpdateView(UpdateView):
             new_stock = self.request.POST.get(f"fournisseur_stock_{fournisseur_produit.fournisseur.id}")
 
             if new_prix:
-                fournisseur_produit.price_ttc = new_prix
+                fournisseur_produit.price_ttc = Decimal(new_prix)  # Assure-toi de bien utiliser Decimal pour les prix
 
             # Calculer la différence de stock (si le nouveau stock est plus élevé)
             difference_stock = int(new_stock) - fournisseur_produit.stock
@@ -284,6 +288,8 @@ class ProductUpdateView(UpdateView):
                     quantite=difference_stock,
                     statut='en_preparation'  # La commande commence en préparation
                 )
+        # Sauvegarder les changements dans la base de données
+        fournisseur_produit.save()
 
         # Ajout de nouveaux fournisseurs avec leur prix (sans modifier directement le stock ici)
         for fournisseur in Fournisseur.objects.all():
@@ -308,13 +314,6 @@ class ProductUpdateView(UpdateView):
                 )
 
         return redirect('product-detail', product.id)
-
-
-
-
-
-
-
 
 # Ajout du décorateur login_required à une CBV
 @method_decorator(login_required, name='dispatch')

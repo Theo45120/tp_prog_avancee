@@ -18,7 +18,7 @@
             {% for fournisseur_produit in product.fournisseurproduit_set.all %}
             <tr>
                 <td>{{ fournisseur_produit.fournisseur.nom }}</td>
-                <td><input type="number" name="fournisseur_prix_{{ fournisseur_produit.fournisseur.id }}" value="{{ fournisseur_produit.price_ttc }}" class="form-control" step="0.01"></td>
+                <td><input type="number" name="fournisseur_prix_{{ fournisseur_produit.fournisseur.id }}" value="{{ fournisseur_produit.price_ttc }}" class="form-control" step="1"></td>
                 <td><input type="number" name="fournisseur_stock_{{ fournisseur_produit.fournisseur.id }}" value="{{ fournisseur_produit.stock }}" class="form-control"></td>
             </tr>
             {% endfor %}
@@ -38,7 +38,7 @@
             {% for fournisseur in fournisseurs_non_associes %}
             <tr>
                 <td>{{ fournisseur.nom }}</td>
-                <td><input type="number" name="new_fournisseur_prix_{{ fournisseur.id }}" class="form-control" step="0.01"></td>
+                <td><input type="number" name="new_fournisseur_prix_{{ fournisseur.id }}" class="form-control" step="1"></td>
                 <td><input type="number" name="new_fournisseur_stock_{{ fournisseur.id }}" class="form-control"></td>
             </tr>
             {% endfor %}

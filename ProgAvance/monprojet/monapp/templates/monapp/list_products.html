@@ -30,12 +30,11 @@ Mon application DJANGO
 <td><a href="{% url 'product-detail' prdct.id %}" class="btn btn-primary">{{ prdct.name }}</a></td>
 <td>{{ prdct.code }} </td>
 <td>
-    <ul class="list-unstyled">
-        <!-- Pour chaque produit, lister les fournisseurs et leurs prix -->
-        {% for fournisseur_produit in prdct.fournisseurproduit_set.all %}
-            <li>{{ fournisseur_produit.fournisseur.nom }}: {{ fournisseur_produit.price_ttc }} €</li>
-        {% endfor %}
-    </ul>
+    {% if prdct.min_price %}
+        {{ prdct.min_price }} €
+    {% else %}
+        Non disponible
+    {% endif %}
 </td>
 <td>{{ prdct.date_creation }} </td>
 <td><a href="{% url 'product-update' prdct.id %}" class="btn btn-warning">modifier</a></td>
