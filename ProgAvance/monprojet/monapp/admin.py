@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, ProductItem, ProductAttribute, ProductAttributeValue, Commande
+from .models import Product, ProductItem, ProductAttribute, ProductAttributeValue, Commande, Fournisseur
 
 class ProductFilter(admin.SimpleListFilter):
     title = 'filtre produit'
@@ -49,5 +49,6 @@ admin.site.register(ProductItem)
 admin.site.register(ProductAttribute)
 admin.site.register(ProductAttributeValue)
 admin.site.register(Commande)
+admin.site.register(Fournisseur)
 
 # Register your models here.

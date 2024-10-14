@@ -289,7 +289,7 @@ class ProductUpdateView(UpdateView):
                     statut='en_preparation'  # La commande commence en préparation
                 )
         # Sauvegarder les changements dans la base de données
-        fournisseur_produit.save()
+            fournisseur_produit.save()
 
         # Ajout de nouveaux fournisseurs avec leur prix (sans modifier directement le stock ici)
         for fournisseur in Fournisseur.objects.all():
