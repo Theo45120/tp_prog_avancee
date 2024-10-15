@@ -515,3 +515,4 @@ class CommandeListView(ListView):
     model = Commande
     template_name = 'monapp/list_commande.html'
     context_object_name = 'commandes'
+    ordering = ['-date_commande']  # Trier par date_commande du plus récent au plus ancien
