@@ -7,6 +7,7 @@
         {% block styles %}
         <link rel="stylesheet" href="{% static 'styles.css' %}" />
         <link rel="stylesheet" href="{% static 'node_modules/bootstrap/dist/css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'detailProduct.css' %}" />
         {% endblock %}
     </head>
     <body>
@@ -18,10 +19,7 @@
                     <li><a class="nav-link" href="{% url 'items-list' %}">Items</a></li>
                     <li><a class="nav-link" href="{% url 'attributes-list' %}">Attributes</a></li>
                     <!-- <li><a class="nav-link" href="{% url 'attributeValue-list' %}">Attributes Values</a></li> -->
-                    {% if user.is_authenticated %}
-                    <li class="nav-item">
-                    <a class="nav-link" href="{% url 'logout' %}">Déconnexion</a>
-                    </li>
+                    {% if user.is_superuser %}
                     <li class="nav-item">
                     <a class="nav-link" href="{% url 'product-add' %}">Créer un nouveau produit</a>
                     </li>
@@ -34,7 +32,12 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'commande-list' %}"> Historique des commandes</a>
                     </li>
-                    {%else%}
+                    {% endif %}
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">Déconnexion</a>
+                    </li>
+                    {% else %}
                     <li class="nav-item">
                     <a class="nav-link" href="{% url 'login' %}">Connexion</a>
                     </li>

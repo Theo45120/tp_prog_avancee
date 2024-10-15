@@ -1,6 +1,6 @@
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseBadRequest
 from .models import *
 from django.db.models import Min
 from django.views.generic import *
@@ -13,12 +13,15 @@ from .forms import AttributeForm, ContactUsForm, ItemForm, ProductForm, ProductU
 from django.forms.models import BaseModelForm
 from django.urls import reverse_lazy
 
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
 import time
 
 from django.http import JsonResponse
 
+# Vérifier si l'utilisateur est un superuser
+def superuser_required(user):
+    return user.is_superuser
 
 """ def home(request):
     if request.GET and request.GET["test"]:
@@ -145,6 +148,29 @@ class ProductDetailView(DetailView):
         context = super(ProductDetailView, self).get_context_data(**kwargs)
         context['titremenu'] = "Détail produit"
         return context
+    
+    def post(self, request, *args, **kwargs):
+        # Récupérer le produit et le fournisseur depuis les paramètres du formulaire
+        product = self.get_object()  # Récupère le produit actuel
+        fournisseur_id = request.POST.get('fournisseur_id')
+        quantity = request.POST.get('quantity')
+
+        fournisseur_produit = get_object_or_404(FournisseurProduit, produit=product, fournisseur_id=fournisseur_id)
+
+        try:
+            # Valider et vérifier la quantité saisie
+            quantity = int(quantity)
+            if quantity <= fournisseur_produit.stock:
+                # Réduire le stock de la quantité validée
+                fournisseur_produit.stock -= quantity
+                fournisseur_produit.save()
+
+                # Ajouter d'autres actions ici, par exemple, création de commande
+                return redirect('product-detail', product.id)
+            else:
+                return HttpResponseBadRequest("La quantité dépasse le stock disponible.")
+        except ValueError:
+            return HttpResponseBadRequest("Quantité invalide.")
 
 # class ItemListView(ListView):
 #     model = ProductItem
@@ -240,8 +266,8 @@ class EmailSentView(TemplateView):
         logout(request)
         return render(request, self.template_name)
     
-# Ajout du décorateur login_required à une CBV
 @method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
 class ProductCreateView(CreateView):
     model = Product  # Define the model you're working with
     form_class = ProductForm  # Define the form class you're using
@@ -253,6 +279,7 @@ class ProductCreateView(CreateView):
 
 
 @method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
 class ProductUpdateView(UpdateView):
     model = Product
     form_class = ProductUpdateForm
@@ -315,15 +342,15 @@ class ProductUpdateView(UpdateView):
 
         return redirect('product-detail', product.id)
 
-# Ajout du décorateur login_required à une CBV
 @method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
 class ProductDeleteView(DeleteView):
     model = Product
     template_name = "monapp/delete_product.html"
     success_url = reverse_lazy('product-list')  # URL to redirect to after successful deletion
 
-# Ajout du décorateur login_required à une CBV
 @method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
 class ItemCreateView(CreateView):
     model = ProductItem  # Define the model you're working with
     form_class = ItemForm  # Define the form class you're using
@@ -333,8 +360,8 @@ class ItemCreateView(CreateView):
         item = form.save()
         return redirect('items-detail', item.id)
 
-# Ajout du décorateur login_required à une CBV
 @method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
 class ItemUpdateView(UpdateView):
     model = ProductItem  # Define the model you're working with
     form_class = ItemForm  # Define the form class you're using
@@ -344,15 +371,15 @@ class ItemUpdateView(UpdateView):
         item = form.save()
         return redirect('items-detail', item.id)
 
-# Ajout du décorateur login_required à une CBV
 @method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
 class ItemDeleteView(DeleteView):
     model = ProductItem
     template_name = "monapp/delete_item.html"
     success_url = reverse_lazy('items-list')  # URL to redirect to after successful deletion
 
-# Ajout du décorateur login_required à une CBV
 @method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
 class AttributeCreateView(CreateView):
     model = ProductAttribute  # Define the model you're working with
     form_class = AttributeForm  # Define the form class you're using
@@ -362,8 +389,8 @@ class AttributeCreateView(CreateView):
         attribute = form.save()
         return redirect('attributes-list')
 
-# Ajout du décorateur login_required à une CBV
 @method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
 class AttributeUpdateView(UpdateView):
     model = ProductAttribute  # Define the model you're working with
     form_class = AttributeForm  # Define the form class you're using
@@ -510,7 +537,8 @@ def actualiser_statut_commande(request, commande_id):
     commande.changer_statut_automatiquement()
     return JsonResponse({'statut': commande.statut})
 
-
+@method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
 class CommandeListView(ListView):
     model = Commande
     template_name = 'monapp/list_commande.html'
