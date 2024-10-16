@@ -1,5 +1,5 @@
 from django import forms
-from .models import Product, ProductAttribute, ProductItem, Fournisseur, FournisseurProduit
+from .models import Product, ProductAttribute, ProductItem, Fournisseur, FournisseurProduit, ProductAttributeValue
 
 class ContactUsForm(forms.Form):
     name = forms.CharField(required=False)
@@ -48,3 +48,13 @@ class ProductUpdateForm(forms.ModelForm):
 
         return product
 
+class ProductAttributeValueForm(forms.ModelForm):
+    class Meta:
+        model = ProductAttributeValue
+        fields = ['value', 'product_attribute', 'position']  # Champs du formulaire
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['value'].required = True
+        self.fields['product_attribute'].required = True
+        self.fields['position'].required = False

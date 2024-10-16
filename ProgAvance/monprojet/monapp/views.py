@@ -18,6 +18,7 @@ from django.utils.decorators import method_decorator
 import time
 
 from django.http import JsonResponse
+from django.contrib.auth.decorators import user_passes_test
 
 
 """ def home(request):
@@ -240,8 +241,15 @@ class EmailSentView(TemplateView):
         logout(request)
         return render(request, self.template_name)
     
+
+# Vérifier si l'utilisateur est un superuser
+def superuser_required(user):
+    return user.is_superuser
+
+
 # Ajout du décorateur login_required à une CBV
 @method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
 class ProductCreateView(CreateView):
     model = Product  # Define the model you're working with
     form_class = ProductForm  # Define the form class you're using
@@ -252,7 +260,9 @@ class ProductCreateView(CreateView):
         return redirect('product-detail', product.id)
 
 
+# Ajout du décorateur login_required à une CBV
 @method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
 class ProductUpdateView(UpdateView):
     model = Product
     form_class = ProductUpdateForm
@@ -315,15 +325,16 @@ class ProductUpdateView(UpdateView):
 
         return redirect('product-detail', product.id)
 
-# Ajout du décorateur login_required à une CBV
 @method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
 class ProductDeleteView(DeleteView):
     model = Product
     template_name = "monapp/delete_product.html"
     success_url = reverse_lazy('product-list')  # URL to redirect to after successful deletion
 
-# Ajout du décorateur login_required à une CBV
+
 @method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
 class ItemCreateView(CreateView):
     model = ProductItem  # Define the model you're working with
     form_class = ItemForm  # Define the form class you're using
@@ -333,8 +344,8 @@ class ItemCreateView(CreateView):
         item = form.save()
         return redirect('items-detail', item.id)
 
-# Ajout du décorateur login_required à une CBV
 @method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
 class ItemUpdateView(UpdateView):
     model = ProductItem  # Define the model you're working with
     form_class = ItemForm  # Define the form class you're using
@@ -344,15 +355,15 @@ class ItemUpdateView(UpdateView):
         item = form.save()
         return redirect('items-detail', item.id)
 
-# Ajout du décorateur login_required à une CBV
 @method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
 class ItemDeleteView(DeleteView):
     model = ProductItem
     template_name = "monapp/delete_item.html"
     success_url = reverse_lazy('items-list')  # URL to redirect to after successful deletion
 
-# Ajout du décorateur login_required à une CBV
 @method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
 class AttributeCreateView(CreateView):
     model = ProductAttribute  # Define the model you're working with
     form_class = AttributeForm  # Define the form class you're using
@@ -362,8 +373,8 @@ class AttributeCreateView(CreateView):
         attribute = form.save()
         return redirect('attributes-list')
 
-# Ajout du décorateur login_required à une CBV
 @method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
 class AttributeUpdateView(UpdateView):
     model = ProductAttribute  # Define the model you're working with
     form_class = AttributeForm  # Define the form class you're using
@@ -373,8 +384,8 @@ class AttributeUpdateView(UpdateView):
         attribute = form.save()
         return redirect('attributes-list')
 
-# Ajout du décorateur login_required à une CBV
 @method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
 class AttributeDeleteView(DeleteView):
     model = ProductAttribute
     template_name = "monapp/delete_attribute.html"
@@ -516,3 +527,15 @@ class CommandeListView(ListView):
     template_name = 'monapp/list_commande.html'
     context_object_name = 'commandes'
     ordering = ['-date_commande']  # Trier par date_commande du plus récent au plus ancien
+
+
+
+class CommandeDetailView(DetailView):
+    model = Commande
+    template_name = 'monapp/commande_detail.html'
+    context_object_name = 'commande'
+
+    def get_object(self):
+        # Récupérer l'objet commande en fonction de l'ID fourni dans l'URL
+        commande_id = self.kwargs.get('commande_id')
+        return get_object_or_404(Commande, id=commande_id)

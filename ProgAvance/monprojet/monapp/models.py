@@ -26,8 +26,8 @@ Produit : nom, code, etc.
 """
 class Product(models.Model):
     name          = models.CharField(max_length=100)
-    code          = models.CharField(max_length=10, null=True, blank=True, unique=True)
-    status        = models.SmallIntegerField(choices=PRODUCT_STATUS, default=0)
+    code          = models.CharField(max_length=10, null=False, blank=False, unique=True)
+    status        = models.SmallIntegerField(choices=PRODUCT_STATUS, default=1)
     date_creation = models.DateTimeField(default=timezone.now, blank=True, verbose_name="Date création")
     fournisseurs  = models.ManyToManyField('Fournisseur', through='FournisseurProduit')
 
