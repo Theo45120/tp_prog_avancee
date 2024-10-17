@@ -46,6 +46,7 @@ urlpatterns=[
     path("attributValue/<pk>",views.ProductAttributeValueDetailView.as_view(), name="attributeValue-detail"),
     path('commande/<int:commande_id>/avancer/', views.avancer_commande, name='avancer-commande'),
     path('commande/<int:commande_id>/', views.CommandeDetailView.as_view(), name='commande-detail'),
+    path('commande/<pk>/delete/', views.CommandeDeleteView.as_view(), name="commande-delete"),
 
 
 

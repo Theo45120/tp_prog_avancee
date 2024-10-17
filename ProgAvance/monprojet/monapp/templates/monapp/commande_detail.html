@@ -12,9 +12,9 @@ Mon application DJANGO
 <p>Quantité : {{ commande.quantite }}</p>
 <p>Statut actuel : {{ commande.get_statut_display }}</p>
 
-{% if commande.statut != 'recue' %}
-    <a href="{% url 'avancer-commande' commande.id %}" class="btn btn-primary">Avancer la commande</a>
-{% else %}
+{% if commande.statut == 'recue' %}
     <p>La commande est déjà reçue.</p>
 {% endif %}
+<p><a href="{% url 'commande-delete' commande.id %}" class="btn btn-danger">Supprimer</a></p>
+<p><a href="{% url 'commande-list' %}" class="btn btn-outline-secondary mt-2">Retour</a></p>
 {% endblock %}

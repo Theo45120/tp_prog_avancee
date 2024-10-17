@@ -529,7 +529,8 @@ class CommandeListView(ListView):
     ordering = ['-date_commande']  # Trier par date_commande du plus récent au plus ancien
 
 
-
+@method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
 class CommandeDetailView(DetailView):
     model = Commande
     template_name = 'monapp/commande_detail.html'
@@ -539,3 +540,10 @@ class CommandeDetailView(DetailView):
         # Récupérer l'objet commande en fonction de l'ID fourni dans l'URL
         commande_id = self.kwargs.get('commande_id')
         return get_object_or_404(Commande, id=commande_id)
+
+@method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
+class CommandeDeleteView(DeleteView):
+    model = Commande
+    template_name = "monapp/delete_commande.html"
+    success_url = reverse_lazy('commande-list')  # URL to redirect to after successful deletion

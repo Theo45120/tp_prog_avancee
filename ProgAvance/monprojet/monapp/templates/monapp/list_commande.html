@@ -16,7 +16,8 @@
     <tbody>
         {% for commande in commandes %}
         <tr>
-            <td>{{ commande.produit.name }}</td>
+            <!-- Ajouter un lien vers la page de détail de la commande -->
+            <td><a href="{% url 'commande-detail' commande.id %}">{{ commande.produit.name }}</a></td>
             <td>{{ commande.fournisseur.nom }}</td>
             <td>{{ commande.quantite }}</td>
             <td id="statut_commande_{{ commande.id }}">{{ commande.statut }}</td>
@@ -25,6 +26,7 @@
         {% endfor %}
     </tbody>
 </table>
+
 
 <script>
     // Fonction pour actualiser le statut d'une commande
