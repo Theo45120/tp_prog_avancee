@@ -18,40 +18,40 @@ Mon application DJANGO
 <table class="table">
 <thead>
 <th>Nom</th>
-<th>Valeurs</th>
-<th>Position</th>
+<th style="padding-left: 0;">Valeurs</th>
+<th style="padding-left: 0;">Position</th>
 {% if user.is_superuser %}
-    <th>Modifier</th>
-    <th>Supprimer</th>
+    <th style="text-align: center;">Modifier</th>
+    <th style="text-align: center;">Supprimer</th>
 {% endif %}
 </thead>
 <tbody>
 {% for attribute in productattributes %}
 <tr>
-<td><a href="{% url 'attribute-detail' attribute.id %}" class="btn btn-primary mt-2">{{ attribute.name}}</a></td>
-<td style="padding: 0.5rem 0 !important;">
+<td style="vertical-align: middle;"><a href="{% url 'attribute-detail' attribute.id %}" class="btn btn-primary mt-2">{{ attribute.name}}</a></td>
+<td style="padding: 0 !important;">
     {% for value in attribute.productattributevalue_set.all %}
-    <p>{{ value.value }}</p>
+    <p style="margin: 1rem 0;">{{ value.value }}</p>
     {% if not forloop.last %}
-        <hr>
+        <hr style="margin: 0;">
     {% endif %}
     {% empty %}
-    <p>Aucune valeur</p>
+    <p style="margin: 1rem 0;">Aucune valeur</p>
     {% endfor %}
 </td>
-<td style="padding: 0.5rem 0 !important;">
+<td style="padding: 0 !important; vertical-align: middle;">
     {% for value in attribute.productattributevalue_set.all %}
-    <p>{{ value.position }}</p>
+    <p style="margin: 1rem 0;">{{ value.position }}</p>
     {% if not forloop.last %}
-        <hr>
+        <hr style="margin: 0;">
     {% endif %}
     {% empty %}
-    <p>Aucune valeur</p>
+    <p style="margin: 1rem 0;">Aucune valeur</p>
     {% endfor %}
 </td>
 {% if user.is_superuser %}
-    <td><a href="{% url 'attribute-update' attribute.id %}" class="btn btn-warning mt-2">Modifier</a></td>
-    <td><a href="{% url 'attribute-delete' attribute.id %}" class="btn btn-danger mt-2">Supprimer</a></td>
+    <td style="text-align: center; vertical-align: middle;"><a href="{% url 'attribute-update' attribute.id %}" class="btn btn-warning mt-2">Modifier</a></td>
+    <td style="text-align: center; vertical-align: middle;"><a href="{% url 'attribute-delete' attribute.id %}" class="btn btn-danger mt-2">Supprimer</a></td>
 {% endif %}
 </tr>
 {% endfor %}

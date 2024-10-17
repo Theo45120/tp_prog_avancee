@@ -17,6 +17,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item"><a class="nav-link" href="{% url 'product-list' %}">Produits</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'fournisseur-list' %}">Fournisseur</a></li>
                     <li><a class="nav-link" href="{% url 'items-list' %}">Items</a></li>
                     <li><a class="nav-link" href="{% url 'attributes-list' %}">Attributes</a></li>
                     <!-- <li><a class="nav-link" href="{% url 'attributeValue-list' %}">Attributes Values</a></li> -->
@@ -58,7 +59,7 @@
         </main>
         <footer class="footer">
             <div class="container">
-                <p>&copy; Copyright {% now "Y" %} by Titof Production Copyrigh (c)</p>
+                <p style="margin: 1rem 0;">&copy; Copyright {% now "Y" %} by Titof Production Copyrigh (c)</p>
             </div>
         </footer>
     </body>

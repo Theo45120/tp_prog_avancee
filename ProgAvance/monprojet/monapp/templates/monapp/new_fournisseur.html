@@ -1,0 +1,15 @@
+{% extends 'monapp/base.html' %}
+
+{% block title %}
+Créer un nouveau fournisseur
+{% endblock %}
+
+{% block contenu %}
+<h1>Créer un nouveau fournisseur</h1>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Créer</button>
+</form>
+{% endblock %}

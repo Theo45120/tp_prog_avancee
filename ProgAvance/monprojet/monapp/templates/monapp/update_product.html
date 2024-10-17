@@ -5,6 +5,14 @@
     {% csrf_token %}
     {{ form.as_p }}
 
+    {% if messages %}
+    <div>
+        {% for message in messages %}
+            <div class="alert alert-warning">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <h3>Fournisseurs déjà associés</h3>
     <table class="table">
         <thead>
@@ -12,6 +20,7 @@
                 <th>Fournisseur</th>
                 <th>Prix</th>
                 <th>Stock</th>
+                <th style="text-align: center;">Supprimer</th>
             </tr>
         </thead>
         <tbody>
@@ -20,6 +29,15 @@
                 <td>{{ fournisseur_produit.fournisseur.nom }}</td>
                 <td><input type="number" name="fournisseur_prix_{{ fournisseur_produit.fournisseur.id }}" value="{{ fournisseur_produit.price_ttc }}" class="form-control" step="1"></td>
                 <td><input type="number" name="fournisseur_stock_{{ fournisseur_produit.fournisseur.id }}" value="{{ fournisseur_produit.stock }}" class="form-control"></td>
+                <td style="text-align: center;">
+                    <!-- Formulaire séparé pour la suppression -->
+                    <form method="POST" action="" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="remove_fournisseur_id" value="{{ fournisseur_produit.id }}">
+                        <input type="hidden" name="action" value="remove">
+                        <button type="submit" class="btn btn-danger btn-sm" name="action" value="remove"><strong>X</strong></button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
@@ -45,6 +63,6 @@
         </tbody>
     </table>
 
-    <button type="submit" class="btn btn-success mt-2">Modifier</button>
+    <button type="submit" class="btn btn-success mt-2" name="action" value="update">Modifier</button>
 </form>
 {% endblock %}

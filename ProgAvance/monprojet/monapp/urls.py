@@ -50,7 +50,11 @@ urlpatterns=[
 
 
     path("fournisseur/list",views.FournisseurListView.as_view(),name="fournisseur-list"),
+    path('fournisseur/add/', views.FournisseurCreateView.as_view(), name='fournisseur-add'),
     path('fournisseur/<pk>/', views.FournisseurDetailView.as_view(), name='fournisseur-detail'),
+    path('fournisseur/<pk>/delete/', views.FournisseurDeleteView.as_view(), name='fournisseur-delete'),
+    path('fournisseur/<pk>/update/', views.FournisseurUpdateView.as_view(), name='fournisseur-update'),
+
 
     # URL de l'api AJAX
     path('commande/<int:commande_id>/actualiser_statut/', actualiser_statut_commande, name='actualiser-statut-commande'),

@@ -58,3 +58,13 @@ class ProductAttributeValueForm(forms.ModelForm):
         self.fields['value'].required = True
         self.fields['product_attribute'].required = True
         self.fields['position'].required = False
+
+class FournisseurForm(forms.ModelForm):
+    class Meta:
+        model = Fournisseur
+        fields = '__all__'
+
+class FournisseurUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Fournisseur
+        fields = ['nom', 'adresse']  # Les champs du fournisseur à mettre à jour

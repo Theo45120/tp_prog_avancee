@@ -34,5 +34,9 @@ Détails du fournisseur - {{ fournisseur.nom }}
         {% endfor %}
     </tbody>
 </table>
-<p><a href="{% url 'fournisseur-list' %}">Retour à la liste des fournisseurs</a></p>
+<a href="{% url 'fournisseur-list' %}" class="btn btn-outline-secondary mt-2">Retour à la liste des fournisseurs</a>
+{% if user.is_superuser %}
+    <a href="{% url 'fournisseur-update' fournisseur.id %}" class="btn btn-warning mt-2">modifier</a>
+    <a href="{% url 'fournisseur-delete' fournisseur.id %}" class="btn btn-danger mt-2">supprimer</a>
+{% endif %}
 {% endblock %}

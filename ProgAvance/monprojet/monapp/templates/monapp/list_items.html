@@ -28,8 +28,8 @@ Mon application DJANGO
 <tbody>
 {% for item in productitems %}
 <tr>
-<td>{{ item.code }}</a></td>
-<td><a href="{% url 'items-detail' item.id %}" class="btn btn-primary mt-2">{{ item.product.name }}</a></td>
+<td><a href="{% url 'items-detail' item.id %}" class="btn btn-primary mt-2">{{ item.code }}</a></td>
+<td>{{ item.product.name }}</a></td>
 <td>{% for attribute in item.attributes.all %}
 <p>{{ attribute.product_attribute.name }} : {{attribute.value }}</p>
 {% empty %}
