@@ -3,7 +3,7 @@
 Mon application DJANGO
 {% endblock %}
 {% block menu %}
-<h1>{{ titre }}</h1>
+<h1>Liste des Fournisseurs</h1>
 {% endblock %}
 {% block contenu %}
 
@@ -17,29 +17,18 @@ Mon application DJANGO
 
 <table class="table">
 <thead>
-<th>Code</th>
-<th>Produit</th>
-<th>Attributs associés</th>
+<th>Nom</th>
+<th>Adresse</th>
 {% if user.is_superuser %}
     <th>Modifier</th>
     <th>Supprimer</th>
 {% endif %}
 </thead>
 <tbody>
-{% for item in productitems %}
+{% for fournisseur in fournisseurs %}
 <tr>
-<td>{{ item.code }}</a></td>
-<td><a href="{% url 'items-detail' item.id %}" class="btn btn-primary mt-2">{{ item.product.name }}</a></td>
-<td>{% for attribute in item.attributes.all %}
-<p>{{ attribute.product_attribute.name }} : {{attribute.value }}</p>
-{% empty %}
-<p>Aucune valeur</p>
-{% endfor %}
-</td>
-{% if user.is_superuser %}
-    <td><a href="{% url 'item-update' item.id %}" class="btn btn-warning mt-2">Modifier</a></td>
-    <td><a href="{% url 'item-delete' item.id %}" class="btn btn-danger mt-2">Supprimer</a></td>
-{% endif %}
+    <td><a href="{% url 'fournisseur-detail' fournisseur.id %}" class="btn btn-primary">{{ fournisseur.nom }}</a></td>
+    <td>{{ fournisseur.adresse }}</td>
 </tr>
 {% endfor %}
 </tbody>

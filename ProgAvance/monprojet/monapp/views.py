@@ -544,3 +544,44 @@ class CommandeListView(ListView):
     template_name = 'monapp/list_commande.html'
     context_object_name = 'commandes'
     ordering = ['-date_commande']  # Trier par date_commande du plus récent au plus ancien
+
+class FournisseurListView(ListView):
+    model = Fournisseur
+    template_name = "monapp/list_fournisseurs.html"  # Le template à utiliser pour afficher la liste
+    context_object_name = "fournisseurs"  # Le nom de l'objet dans le contexte du template
+
+    def get_queryset(self):
+        """
+        Surcouche pour filtrer les résultats en fonction de la recherche.
+        Récupère le terme de recherche dans la requête GET.
+        """
+        query = self.request.GET.get('search')
+        if query:
+            # Filtrer les fournisseurs par nom (insensible à la casse)
+            return Fournisseur.objects.filter(nom__icontains=query)
+        
+        # Si aucun terme de recherche, retourner tous les fournisseurs
+        return Fournisseur.objects.all()
+
+    def get_context_data(self, **kwargs):
+        """
+        Ajouter des données supplémentaires au contexte de la vue.
+        """
+        context = super(FournisseurListView, self).get_context_data(**kwargs)
+        context['titremenu'] = "Liste des fournisseurs"  # Un titre personnalisé pour le menu
+        return context
+
+class FournisseurDetailView(DetailView):
+    model = Fournisseur
+    template_name = "monapp/detail_fournisseur.html"
+    context_object_name = "fournisseur"
+
+    def get_context_data(self, **kwargs):
+        """
+        Ajouter les produits vendus par le fournisseur au contexte.
+        """
+        context = super(FournisseurDetailView, self).get_context_data(**kwargs)
+        # Récupérer les produits liés au fournisseur
+        produits_vendus = FournisseurProduit.objects.filter(fournisseur=self.object)
+        context['produits_vendus'] = produits_vendus
+        return context
