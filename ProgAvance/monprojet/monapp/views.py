@@ -1,6 +1,6 @@
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseBadRequest
 from .models import *
 from django.db.models import Min
 from django.views.generic import *
@@ -13,13 +13,16 @@ from .forms import AttributeForm, ContactUsForm, ItemForm, ProductForm, ProductU
 from django.forms.models import BaseModelForm
 from django.urls import reverse_lazy
 
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
 import time
 
 from django.http import JsonResponse
 from django.contrib.auth.decorators import user_passes_test
 
+# Vérifier si l'utilisateur est un superuser
+def superuser_required(user):
+    return user.is_superuser
 
 """ def home(request):
     if request.GET and request.GET["test"]:
@@ -146,6 +149,29 @@ class ProductDetailView(DetailView):
         context = super(ProductDetailView, self).get_context_data(**kwargs)
         context['titremenu'] = "Détail produit"
         return context
+    
+    def post(self, request, *args, **kwargs):
+        # Récupérer le produit et le fournisseur depuis les paramètres du formulaire
+        product = self.get_object()  # Récupère le produit actuel
+        fournisseur_id = request.POST.get('fournisseur_id')
+        quantity = request.POST.get('quantity')
+
+        fournisseur_produit = get_object_or_404(FournisseurProduit, produit=product, fournisseur_id=fournisseur_id)
+
+        try:
+            # Valider et vérifier la quantité saisie
+            quantity = int(quantity)
+            if quantity <= fournisseur_produit.stock:
+                # Réduire le stock de la quantité validée
+                fournisseur_produit.stock -= quantity
+                fournisseur_produit.save()
+
+                # Ajouter d'autres actions ici, par exemple, création de commande
+                return redirect('product-detail', product.id)
+            else:
+                return HttpResponseBadRequest("La quantité dépasse le stock disponible.")
+        except ValueError:
+            return HttpResponseBadRequest("Quantité invalide.")
 
 # class ItemListView(ListView):
 #     model = ProductItem
@@ -241,13 +267,13 @@ class EmailSentView(TemplateView):
         logout(request)
         return render(request, self.template_name)
     
-
 # Vérifier si l'utilisateur est un superuser
 def superuser_required(user):
     return user.is_superuser
 
 
 # Ajout du décorateur login_required à une CBV
+
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(superuser_required), name='dispatch')
 class ProductCreateView(CreateView):
@@ -331,7 +357,6 @@ class ProductDeleteView(DeleteView):
     model = Product
     template_name = "monapp/delete_product.html"
     success_url = reverse_lazy('product-list')  # URL to redirect to after successful deletion
-
 
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(superuser_required), name='dispatch')
@@ -521,7 +546,8 @@ def actualiser_statut_commande(request, commande_id):
     commande.changer_statut_automatiquement()
     return JsonResponse({'statut': commande.statut})
 
-
+@method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(superuser_required), name='dispatch')
 class CommandeListView(ListView):
     model = Commande
     template_name = 'monapp/list_commande.html'
@@ -547,3 +573,43 @@ class CommandeDeleteView(DeleteView):
     model = Commande
     template_name = "monapp/delete_commande.html"
     success_url = reverse_lazy('commande-list')  # URL to redirect to after successful deletion
+class FournisseurListView(ListView):
+    model = Fournisseur
+    template_name = "monapp/list_fournisseurs.html"  # Le template à utiliser pour afficher la liste
+    context_object_name = "fournisseurs"  # Le nom de l'objet dans le contexte du template
+
+    def get_queryset(self):
+        """
+        Surcouche pour filtrer les résultats en fonction de la recherche.
+        Récupère le terme de recherche dans la requête GET.
+        """
+        query = self.request.GET.get('search')
+        if query:
+            # Filtrer les fournisseurs par nom (insensible à la casse)
+            return Fournisseur.objects.filter(nom__icontains=query)
+        
+        # Si aucun terme de recherche, retourner tous les fournisseurs
+        return Fournisseur.objects.all()
+
+    def get_context_data(self, **kwargs):
+        """
+        Ajouter des données supplémentaires au contexte de la vue.
+        """
+        context = super(FournisseurListView, self).get_context_data(**kwargs)
+        context['titremenu'] = "Liste des fournisseurs"  # Un titre personnalisé pour le menu
+        return context
+
+class FournisseurDetailView(DetailView):
+    model = Fournisseur
+    template_name = "monapp/detail_fournisseur.html"
+    context_object_name = "fournisseur"
+
+    def get_context_data(self, **kwargs):
+        """
+        Ajouter les produits vendus par le fournisseur au contexte.
+        """
+        context = super(FournisseurDetailView, self).get_context_data(**kwargs)
+        # Récupérer les produits liés au fournisseur
+        produits_vendus = FournisseurProduit.objects.filter(fournisseur=self.object)
+        context['produits_vendus'] = produits_vendus
+        return context

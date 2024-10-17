@@ -1,0 +1,38 @@
+{% extends 'monapp/base.html' %}
+
+{% block title %}
+Détails du fournisseur - {{ fournisseur.nom }}
+{% endblock %}
+
+{% block contenu %}
+<h1>{{ fournisseur.nom }}</h1>
+<p style="padding-bottom: 0.5rem; border-bottom: 1px solid black;"><strong>Adresse :</strong> {{ fournisseur.adresse }}</p>
+
+<h2>Produits vendus :</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nom du produit</th>
+            <th>Code</th>
+            <th>Prix TTC</th>
+            <th>Stock</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for produit in produits_vendus %}
+        <tr>
+            <td>{{ produit.produit.name }}</td>
+            <td>{{ produit.produit.code }}</td>
+            <td>{{ produit.price_ttc }}</td>
+            <td>{{ produit.stock }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">Aucun produit trouvé pour ce fournisseur.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<p><a href="{% url 'fournisseur-list' %}">Retour à la liste des fournisseurs</a></p>
+{% endblock %}

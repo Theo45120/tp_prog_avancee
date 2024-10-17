@@ -17,15 +17,27 @@ Mon application DJANGO
         <li>
             Fournisseur : {{ fournisseur_produit.fournisseur.nom }} <br>
             Prix du fournisseur : {{ fournisseur_produit.price_ttc }} € <br>
-            Stock disponible : {{ fournisseur_produit.stock }}
+            Stock disponible : {{ fournisseur_produit.stock }} <br>
+            {% if not user.is_superuser %}
+                <form action="" method="POST">
+                    {% csrf_token %}
+                    <div class="formulaire">
+                        <label for="quantity_{{ fournisseur_produit.fournisseur.id }}">Acheter :</label>
+                        <input type="number" name="quantity" id="quantity_{{ fournisseur_produit.fournisseur.id }}" min="1" max="{{ fournisseur_produit.stock }}" class="form-control" required>
+                        <input type="hidden" name="fournisseur_id" value="{{ fournisseur_produit.fournisseur.id }}">
+                        <button type="submit" class="btn btn-success mt-2" style="margin: 0 !important;">Valider</button>
+                    </div>
+                </form>
+            {% endif %}
+
         </li>
     {% empty %}
         <li>Aucun fournisseur associé à ce produit</li>
     {% endfor %}
 </ul> 
-
-<p><a href="{% url 'product-update' product.id %}" class="btn btn-primary">Modifier</a></p>
-<p><a href="{% url 'product-delete' product.id %}" class="btn btn-danger">Supprimer</a></p>
-<p><a href="{% url 'product-list' %}">Retour à la liste des produits</a></p>
-
+{% if user.is_superuser %}
+    <p><a href="{% url 'product-update' product.id %}" class="btn btn-primary">Modifier</a></p>
+    <p><a href="{% url 'product-delete' product.id %}" class="btn btn-danger">Supprimer</a></p>
+{% endif %}
+    <p><a href="{% url 'product-list' %}">Retour à la liste des produits</a></p>
 {% endblock %}

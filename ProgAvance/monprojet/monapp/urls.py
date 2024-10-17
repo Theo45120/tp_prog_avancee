@@ -49,6 +49,8 @@ urlpatterns=[
     path('commande/<pk>/delete/', views.CommandeDeleteView.as_view(), name="commande-delete"),
 
 
+    path("fournisseur/list",views.FournisseurListView.as_view(),name="fournisseur-list"),
+    path('fournisseur/<pk>/', views.FournisseurDetailView.as_view(), name='fournisseur-detail'),
 
     # URL de l'api AJAX
     path('commande/<int:commande_id>/actualiser_statut/', actualiser_statut_commande, name='actualiser-statut-commande'),

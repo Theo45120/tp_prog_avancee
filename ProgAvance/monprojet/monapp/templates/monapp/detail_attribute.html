@@ -15,6 +15,8 @@ Mon application DJANGO
     {% endfor %}
 </ul>
 <a href="{% url 'attributes-list' %}" class="btn btn-outline-secondary mt-2">Retour</a>
-<a href="{% url 'attribute-update' productattribute.id %}" class="btn btn-warning mt-2">Modifier</a>
-<a href="{% url 'attribute-delete' productattribute.id %}" class="btn btn-danger mt-2">Supprimer</a>
+{% if user.is_superuser %}
+    <a href="{% url 'attribute-update' productattribute.id %}" class="btn btn-warning mt-2">Modifier</a>
+    <a href="{% url 'attribute-delete' productattribute.id %}" class="btn btn-danger mt-2">Supprimer</a>
+{% endif %}
 {% endblock %}
