@@ -158,9 +158,9 @@ class Commande(models.Model):
         - 40 secondes pour passer de "passee" à "recue"
         """
         now = timezone.now()
-        if self.statut == 'en_preparation' and now >= self.date_commande + timedelta(seconds=20):
+        if self.statut == 'en_preparation' and now >= self.date_commande + timedelta(seconds=5):
             self.statut = 'passee'
-        elif self.statut == 'passee' and now >= self.date_commande + timedelta(seconds=40):
+        elif self.statut == 'passee' and now >= self.date_commande + timedelta(seconds=10):
             self.statut = 'recue'
         self.save()
 

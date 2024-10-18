@@ -30,13 +30,11 @@
                 <td><input type="number" name="fournisseur_prix_{{ fournisseur_produit.fournisseur.id }}" value="{{ fournisseur_produit.price_ttc }}" class="form-control" step="1"></td>
                 <td><input type="number" name="fournisseur_stock_{{ fournisseur_produit.fournisseur.id }}" value="{{ fournisseur_produit.stock }}" class="form-control"></td>
                 <td style="text-align: center;">
-                    <!-- Formulaire séparé pour la suppression -->
-                    <form method="POST" action="" style="display:inline;">
-                        {% csrf_token %}
-                        <input type="hidden" name="remove_fournisseur_id" value="{{ fournisseur_produit.id }}">
-                        <input type="hidden" name="action" value="remove">
-                        <button type="submit" class="btn btn-danger btn-sm" name="action" value="remove"><strong>X</strong></button>
-                    </form>
+                <!-- Bouton de suppression sans formulaire imbriqué -->
+                <td style="text-align: center;">
+                    <button type="submit" name="remove_fournisseur_id" value="{{ fournisseur_produit.id }}" class="btn btn-danger btn-sm">
+                        <strong>X</strong>
+                    </button>
                 </td>
             </tr>
             {% endfor %}

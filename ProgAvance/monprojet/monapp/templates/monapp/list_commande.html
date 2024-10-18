@@ -43,7 +43,7 @@
         {% for commande in commandes %}
         setInterval(function() {
             actualiserStatutCommande({{ commande.id }});
-        }, 20000); // 20 secondes
+        }, 2000); // 20 secondes
         {% endfor %}
     }
 

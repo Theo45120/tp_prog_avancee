@@ -307,75 +307,71 @@ class ProductUpdateView(UpdateView):
     def form_valid(self, form):
         product = form.save()
 
-        # Vérifier l'action soumise (supprimer ou mettre à jour)
-        action = self.request.POST.get('action')
-    
-        if action == "remove":
+        if 'remove_fournisseur_id' in self.request.POST:
+            # Action de suppression
             remove_fournisseur_id = self.request.POST.get('remove_fournisseur_id')
             if remove_fournisseur_id:
                 fournisseur_produit = get_object_or_404(FournisseurProduit, id=remove_fournisseur_id)
                 fournisseur_produit.delete()
-                messages.success(self.request, f"Le fournisseur {fournisseur_produit.fournisseur.nom} a été supprimé avec succès.")
-                
-                # Redirige vers la même vue pour éviter la double soumission
+                messages.success(self.request, f"Le fournisseur {fournisseur_produit.fournisseur.nom} a été retiré avec succès.")
                 return redirect('product-update', pk=product.pk)
+        else:
 
-        # Mise à jour des fournisseurs déjà associés
-        for fournisseur_produit in product.fournisseurproduit_set.all():
-            new_prix = self.request.POST.get(f"fournisseur_prix_{fournisseur_produit.fournisseur.id}")
-            new_stock = self.request.POST.get(f"fournisseur_stock_{fournisseur_produit.fournisseur.id}")
+            # Mise à jour des fournisseurs déjà associés
+            for fournisseur_produit in product.fournisseurproduit_set.all():
+                new_prix = self.request.POST.get(f"fournisseur_prix_{fournisseur_produit.fournisseur.id}")
+                new_stock = self.request.POST.get(f"fournisseur_stock_{fournisseur_produit.fournisseur.id}")
 
-            if new_prix:
-                try:
-                    fournisseur_produit.price_ttc = Decimal(new_prix)
-                except (ValueError, InvalidOperation):
-                    messages.error(self.request, f"Le prix saisi pour {fournisseur_produit.fournisseur.nom} est invalide.")
+                if new_prix:
+                    try:
+                        fournisseur_produit.price_ttc = Decimal(new_prix)
+                    except (ValueError, InvalidOperation):
+                        messages.error(self.request, f"Le prix saisi pour {fournisseur_produit.fournisseur.nom} est invalide.")
+                        return self.form_invalid(form)
+
+                # Vérification de la condition de stock
+                if new_stock and int(new_stock) < fournisseur_produit.stock:
+                    messages.error(self.request, f"La nouvelle quantité de stock pour {fournisseur_produit.fournisseur.nom} doit être supérieure ou égale au stock actuel.")
                     return self.form_invalid(form)
 
-            # Vérification de la condition de stock
-            if new_stock and int(new_stock) < fournisseur_produit.stock:
-                messages.error(self.request, f"La nouvelle quantité de stock pour {fournisseur_produit.fournisseur.nom} doit être supérieure ou égale au stock actuel.")
-                return self.form_invalid(form)
-
-            # Calculer la différence de stock
-            difference_stock = int(new_stock) - fournisseur_produit.stock
-            if difference_stock > 0:
-                Commande.objects.create(
-                    produit=product,
-                    fournisseur=fournisseur_produit.fournisseur,
-                    quantite=difference_stock,
-                    statut='en_preparation'
-                )
-            fournisseur_produit.save()
-
-        # Ajout de nouveaux fournisseurs avec leurs prix
-        for fournisseur in Fournisseur.objects.all():
-            price_ttc = self.request.POST.get(f"new_fournisseur_prix_{fournisseur.id}")
-            stock = self.request.POST.get(f"new_fournisseur_stock_{fournisseur.id}")
-
-            if price_ttc and stock:
-                try:
-                    fournisseur_produit = FournisseurProduit.objects.create(
-                        produit=product,
-                        fournisseur=fournisseur,
-                        price_ttc=Decimal(price_ttc),
-                        stock=0
-                    )
-
-                    # Créer une commande pour ajouter le stock
+                # Calculer la différence de stock
+                difference_stock = int(new_stock) - fournisseur_produit.stock
+                if difference_stock > 0:
                     Commande.objects.create(
                         produit=product,
-                        fournisseur=fournisseur,
-                        quantite=int(stock),
+                        fournisseur=fournisseur_produit.fournisseur,
+                        quantite=difference_stock,
                         statut='en_preparation'
                     )
-                except (ValueError, InvalidOperation):
-                    messages.error(self.request, f"Le prix saisi pour le nouveau fournisseur {fournisseur.nom} est invalide.")
-                    return self.form_invalid(form)
+                fournisseur_produit.save()
 
-        #messages.success(self.request, "Le produit a été mis à jour avec succès.")
-        return redirect('product-detail', product.id)
+            # Ajout de nouveaux fournisseurs avec leurs prix
+            for fournisseur in Fournisseur.objects.all():
+                price_ttc = self.request.POST.get(f"new_fournisseur_prix_{fournisseur.id}")
+                stock = self.request.POST.get(f"new_fournisseur_stock_{fournisseur.id}")
 
+                if price_ttc and stock:
+                    try:
+                        fournisseur_produit = FournisseurProduit.objects.create(
+                            produit=product,
+                            fournisseur=fournisseur,
+                            price_ttc=Decimal(price_ttc),
+                            stock=0
+                        )
+
+                        # Créer une commande pour ajouter le stock
+                        Commande.objects.create(
+                            produit=product,
+                            fournisseur=fournisseur,
+                            quantite=int(stock),
+                            statut='en_preparation'
+                        )
+                    except (ValueError, InvalidOperation):
+                        messages.error(self.request, f"Le prix saisi pour le nouveau fournisseur {fournisseur.nom} est invalide.")
+                        return self.form_invalid(form)
+
+            #messages.success(self.request, "Le produit a été mis à jour avec succès.")
+            return redirect('product-detail', product.id)
 
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(superuser_required), name='dispatch')
@@ -554,13 +550,13 @@ def avancer_commande(request, commande_id):
     if commande.statut == 'en_preparation':
         commande.statut = 'passee'
         commande.save()
-        time.sleep(20)  # Attendre 20 secondes avant de passer à l'étape suivante
+        time.sleep(5)  # Attendre 20 secondes avant de passer à l'étape suivante
 
     # Si la commande est passée mais pas encore reçue
     if commande.statut == 'passee':
         commande.statut = 'recue'
         commande.save()
-        time.sleep(20)  # Attendre 20 secondes avant de marquer la commande comme reçue
+        time.sleep(5)  # Attendre 20 secondes avant de marquer la commande comme reçue
 
     return redirect('commande-detail', commande_id=commande.id)  # Redirige vers le détail de la commande après mise à jour
 
@@ -677,64 +673,67 @@ class FournisseurUpdateView(UpdateView):
     def form_valid(self, form):
         fournisseur = form.save()
 
-        action = self.request.POST.get('action')
-        if action == "remove":
+        if 'remove_fournisseur_id' in self.request.POST:
+            # Action de suppression
             remove_fournisseur_id = self.request.POST.get('remove_fournisseur_id')
             if remove_fournisseur_id:
                 fournisseur_produit = get_object_or_404(FournisseurProduit, id=remove_fournisseur_id)
                 fournisseur_produit.delete()
                 messages.success(self.request, f"Le produit {fournisseur_produit.produit.name} a été retiré avec succès.")
                 return redirect('fournisseur-update', pk=fournisseur.pk)
+        else:
+            # Action de mise à jour
+            for fournisseur_produit in fournisseur.fournisseurproduit_set.all():
+                new_prix = self.request.POST.get(f"fournisseur_prix_{fournisseur_produit.produit.id}")
+                new_stock = self.request.POST.get(f"fournisseur_stock_{fournisseur_produit.produit.id}")
 
-        for fournisseur_produit in fournisseur.fournisseurproduit_set.all():
-            new_prix = self.request.POST.get(f"fournisseur_prix_{fournisseur_produit.produit.id}")
-            new_stock = self.request.POST.get(f"fournisseur_stock_{fournisseur_produit.produit.id}")
+                if new_prix:
+                    fournisseur_produit.price_ttc = Decimal(new_prix)
 
-            if new_prix:
-                fournisseur_produit.price_ttc = Decimal(new_prix)
+                if new_stock:
+                    try:
+                        new_stock_int = int(new_stock)
+                        if new_stock_int < fournisseur_produit.stock:
+                            messages.error(self.request, f"La nouvelle quantité de stock pour {fournisseur_produit.produit.name} doit être supérieure ou égale au stock actuel.")
+                            return self.form_invalid(form)
 
-            if new_stock:
-                try:
-                    new_stock_int = int(new_stock)
-                    if new_stock_int < fournisseur_produit.stock:
-                        messages.error(self.request, f"La nouvelle quantité de stock pour {fournisseur_produit.produit.name} doit être supérieure ou égale au stock actuel.")
+                        difference_stock = new_stock_int - fournisseur_produit.stock
+                        if difference_stock > 0:
+                            Commande.objects.create(
+                                produit=fournisseur_produit.produit,
+                                fournisseur=fournisseur,
+                                quantite=difference_stock,
+                                statut='en_preparation'
+                            )
+                        fournisseur_produit.stock = new_stock_int
+                    except ValueError:
+                        messages.error(self.request, f"La valeur du stock pour {fournisseur_produit.produit.name} est invalide.")
                         return self.form_invalid(form)
 
-                    difference_stock = new_stock_int - fournisseur_produit.stock
-                    if difference_stock > 0:
-                        Commande.objects.create(
-                            produit=fournisseur_produit.produit,
+                fournisseur_produit.save()
+
+            # Ajouter de nouveaux produits
+            for produit in Product.objects.all():
+                price_ttc = self.request.POST.get(f"new_fournisseur_prix_{produit.id}")
+                stock = self.request.POST.get(f"new_fournisseur_stock_{produit.id}")
+
+                if price_ttc and stock:
+                    try:
+                        fournisseur_produit = FournisseurProduit.objects.create(
+                            produit=produit,
                             fournisseur=fournisseur,
-                            quantite=difference_stock,
+                            price_ttc=Decimal(price_ttc),
+                            stock=0
+                        )
+                        Commande.objects.create(
+                            produit=produit,
+                            fournisseur=fournisseur,
+                            quantite=int(stock),
                             statut='en_preparation'
                         )
-                    fournisseur_produit.stock = new_stock_int
-                except ValueError:
-                    messages.error(self.request, f"La valeur du stock pour {fournisseur_produit.produit.name} est invalide.")
-                    return self.form_invalid(form)
+                    except ValueError:
+                        messages.error(self.request, f"Erreur lors de la création de la relation pour le produit {produit.name}.")
+                        return self.form_invalid(form)
 
-            fournisseur_produit.save()
-
-        for produit in Product.objects.all():
-            price_ttc = self.request.POST.get(f"new_fournisseur_prix_{produit.id}")
-            stock = self.request.POST.get(f"new_fournisseur_stock_{produit.id}")
-
-            if price_ttc and stock:
-                try:
-                    fournisseur_produit = FournisseurProduit.objects.create(
-                        produit=produit,
-                        fournisseur=fournisseur,
-                        price_ttc=Decimal(price_ttc),
-                        stock=0
-                    )
-                    Commande.objects.create(
-                        produit=produit,
-                        fournisseur=fournisseur,
-                        quantite=int(stock),
-                        statut='en_preparation'
-                    )
-                except ValueError:
-                    messages.error(self.request, f"Erreur lors de la création de la relation pour le produit {produit.name}.")
-                    return self.form_invalid(form)
-
-        return redirect('fournisseur-detail', fournisseur.id)
+            messages.success(self.request, "Modifications enregistrées avec succès.")
+            return redirect('fournisseur-detail', fournisseur.id)
