@@ -6,9 +6,9 @@ from monapp.models import Product, Fournisseur, Commande, FournisseurProduit
 class CommandeTestUrlResponses(TestCase):
 
     def setUp(self):
-        # Créer un utilisateur pour les tests
-        self.user = User.objects.create_user(username='testuser', password='secret')
-        self.client.login(username='testuser', password='secret')
+        # Créer un utilisateur administrateur pour les tests
+        self.user = User.objects.create_superuser(username='adminuser', password='secret', email='admin@test.com')
+        self.client.login(username='adminuser', password='secret')
 
         # Créer un fournisseur, un produit et lier un FournisseurProduit
         self.fournisseur = Fournisseur.objects.create(nom="Test Fournisseur", adresse="123 Rue Test")
@@ -32,6 +32,7 @@ class CommandeTestUrlResponses(TestCase):
         url = reverse('commande-detail', args=[self.commande.id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Test Produit')  # Vérifier que le produit est affiché dans la page
 
     def test_commande_detail_status_code_invalid_id(self):
         """
