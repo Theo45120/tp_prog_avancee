@@ -1,0 +1,10 @@
+{% extends 'monapp/base.html' %}
+{% block title %}
+Mon application DJANGO
+{% endblock %}
+{% block contenu %}
+<hr/>
+<h1>Merci pour votre message !</h1>
+<p>Votre message a été envoyé avec succès. Nous vous répondrons dans les plus brefs délais.</p>
+<a href="{% url 'contact' %}">Retour au formulaire de contact</a>
+{% endblock %}

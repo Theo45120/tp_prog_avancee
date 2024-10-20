@@ -1,0 +1,60 @@
+{% extends 'monapp/base.html' %}
+{% block title %}
+Mon application DJANGO
+{% endblock %}
+{% block menu %}
+<h1>Liste des ATTRIBUTES</h1>
+{% endblock %}
+{% block contenu %}
+
+<!-- Barre de recherche -->
+<p class="lead mb-3 ml-0">Rechercher un élément...</p>
+<form method="GET" action="">
+    <input class="form-control" type="text" name="search" placeholder="Tapez ici votre recherche"
+    value="{{ request.GET.search }}">
+    <button type="submit" class="btn btn-success mt-2">Rechercher</button>
+</form>
+
+<table class="table">
+<thead>
+<th>Nom</th>
+<th style="padding-left: 0;">Valeurs</th>
+<th style="padding-left: 0;">Position</th>
+{% if user.is_superuser %}
+    <th style="text-align: center;">Modifier</th>
+    <th style="text-align: center;">Supprimer</th>
+{% endif %}
+</thead>
+<tbody>
+{% for attribute in productattributes %}
+<tr>
+<td style="vertical-align: middle;"><a href="{% url 'attribute-detail' attribute.id %}" class="btn btn-primary mt-2">{{ attribute.name}}</a></td>
+<td style="padding: 0 !important;">
+    {% for value in attribute.productattributevalue_set.all %}
+    <p style="margin: 1rem 0;">{{ value.value }}</p>
+    {% if not forloop.last %}
+        <hr style="margin: 0;">
+    {% endif %}
+    {% empty %}
+    <p style="margin: 1rem 0;">Aucune valeur</p>
+    {% endfor %}
+</td>
+<td style="padding: 0 !important; vertical-align: middle;">
+    {% for value in attribute.productattributevalue_set.all %}
+    <p style="margin: 1rem 0;">{{ value.position }}</p>
+    {% if not forloop.last %}
+        <hr style="margin: 0;">
+    {% endif %}
+    {% empty %}
+    <p style="margin: 1rem 0;">Aucune valeur</p>
+    {% endfor %}
+</td>
+{% if user.is_superuser %}
+    <td style="text-align: center; vertical-align: middle;"><a href="{% url 'attribute-update' attribute.id %}" class="btn btn-warning mt-2">Modifier</a></td>
+    <td style="text-align: center; vertical-align: middle;"><a href="{% url 'attribute-delete' attribute.id %}" class="btn btn-danger mt-2">Supprimer</a></td>
+{% endif %}
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock %}

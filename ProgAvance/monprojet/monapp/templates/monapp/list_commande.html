@@ -1,0 +1,64 @@
+{% extends 'monapp/base.html' %}
+
+{% block contenu %}
+<h1>Liste des commandes</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Produit</th>
+            <th>Fournisseur</th>
+            <th>Quantité</th>
+            <th>Statut</th>
+            <th>Date de commande</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for commande in commandes %}
+        <tr>
+            <!-- Ajouter un lien vers la page de détail de la commande -->
+            <td><a href="{% url 'commande-detail' commande.id %}">{{ commande.produit.name }}</a></td>
+            <td>{{ commande.fournisseur.nom }}</td>
+            <td>{{ commande.quantite }}</td>
+            <td id="statut_commande_{{ commande.id }}">{{ commande.statut }}</td>
+            <td>{{ commande.date_commande }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+<script>
+    // Objet pour stocker les intervals par commande
+    const intervals = {};
+
+    // Fonction pour actualiser le statut d'une commande
+    function actualiserStatutCommande(commandeId) {
+        fetch(`/monapp/commande/${commandeId}/actualiser_statut/`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById(`statut_commande_${commandeId}`).innerText = data.statut;
+                // Si le statut est final, arrêter les mises à jour
+                if (data.statut === 'recue' || data.statut === 'Reçue') {
+                    clearInterval(intervals[commandeId]); // Arrête l'interval pour cette commande
+                }
+            });
+    }
+
+    // Lancer l'actualisation périodique pour chaque commande
+    function lancerActualisationPourToutesCommandes() {
+        {% for commande in commandes %}
+        intervals[{{ commande.id }}] = setInterval(function() {
+            actualiserStatutCommande({{ commande.id }});
+        }, 5000); // Actualisation toutes les 20 secondes
+        {% endfor %}
+    }
+
+    // Appel de la fonction de mise à jour après le chargement de la page
+    window.onload = function() {
+        lancerActualisationPourToutesCommandes();
+    }
+</script>
+
+
+{% endblock %}

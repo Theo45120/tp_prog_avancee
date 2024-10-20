@@ -1,0 +1,44 @@
+{% extends 'monapp/base.html' %}
+{% block title %}
+Mon application DJANGO
+{% endblock %}
+{% block menu %}
+<h1>{{ titremenu }}</h1>
+{% endblock %}
+{% block contenu %}
+<h2>{{ product.name }}</h2>
+<ul>
+    <li>Code : {{ product.code }}</li>
+</ul>
+
+<h3>Fournisseurs et stocks</h3>
+<ul>
+    {% for fournisseur_produit in product.fournisseurproduit_set.all %}
+        <li>
+            Fournisseur : {{ fournisseur_produit.fournisseur.nom }} <br>
+            Prix du fournisseur : {{ fournisseur_produit.price_ttc }} € <br>
+            Stock disponible : {{ fournisseur_produit.stock }} <br>
+            {% if not user.is_superuser %}
+                <form action="" method="POST">
+                    {% csrf_token %}
+                    <div class="formulaire">
+                        <label for="quantity_{{ fournisseur_produit.fournisseur.id }}">Acheter :</label>
+                        <input type="number" name="quantity" id="quantity_{{ fournisseur_produit.fournisseur.id }}" min="1" max="{{ fournisseur_produit.stock }}" class="form-control" required>
+                        <input type="hidden" name="fournisseur_id" value="{{ fournisseur_produit.fournisseur.id }}">
+                        <button type="submit" class="btn btn-success mt-2" style="margin: 0 !important;">Valider</button>
+                    </div>
+                </form>
+            {% endif %}
+
+        </li>
+    {% empty %}
+        <li>Aucun fournisseur associé à ce produit</li>
+    {% endfor %}
+</ul> 
+<a href="{% url 'product-list' %}" class="btn btn-outline-secondary mt-2">Retour à la liste des produits</a>
+{% if user.is_superuser %}
+    <a href="{% url 'product-update' product.id %}" class="btn btn-primary mt-2">Modifier</a>
+    <a href="{% url 'product-delete' product.id %}" class="btn btn-danger mt-2">Supprimer</a>
+{% endif %}
+
+{% endblock %}

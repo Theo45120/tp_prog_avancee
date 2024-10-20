@@ -1,0 +1,54 @@
+{% extends 'monapp/base.html' %}
+
+{% block title %}
+Mon application DJANGO
+{% endblock %}
+
+{% block menu %}
+<h1>Liste des Fournisseurs</h1>
+{% endblock %}
+
+{% block contenu %}
+
+<!-- Barre de recherche -->
+<p class="lead mb-3 ml-0">Rechercher un élément...</p>
+<form method="GET" action="">
+    <input class="form-control" type="text" name="search" placeholder="Tapez ici votre recherche"
+           value="{{ request.GET.search }}">
+    <button type="submit" class="btn btn-success mt-2">Rechercher</button>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Adresse</th>
+            {% if user.is_superuser %}
+                <th>Modifier</th>
+                <th>Supprimer</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for fournisseur in fournisseurs %}
+        <tr>
+            <td><a href="{% url 'fournisseur-detail' fournisseur.id %}" class="btn btn-primary">{{ fournisseur.nom }}</a></td>
+            <td>{{ fournisseur.adresse }}</td>
+            {% if user.is_superuser %}
+                <td>
+                    <a href="{% url 'fournisseur-update' fournisseur.id %}" class="btn btn-warning">Modifier</a>
+                </td>
+                <td>
+                    <a href="{% url 'fournisseur-delete' fournisseur.id %}" class="btn btn-danger">Supprimer</a>
+                </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if user.is_superuser %}
+    <p><a href="{% url 'fournisseur-add' %}" class="btn btn-dark">Créer un nouveau fournisseur</a></p>
+{% endif %}
+
+{% endblock %}

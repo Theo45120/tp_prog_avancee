@@ -1,0 +1,90 @@
+{% extends 'monapp/base.html' %}
+
+{% block title %}
+Modifier le fournisseur {{ form.instance.nom }}
+{% endblock %}
+
+{% block contenu %}
+<h1>Modifier le fournisseur {{ form.instance.nom }}</h1>
+
+<form method="POST">
+    {% csrf_token %}
+    
+    <!-- Afficher les erreurs du formulaire -->
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+    
+    {{ form.as_p }}
+
+    <!-- Afficher les messages d'erreur généraux -->
+    {% if messages %}
+        <div>
+            {% for message in messages %}
+                <div class="alert alert-warning">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <h3>Produits associés</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Prix TTC</th>
+                <th>Stock</th>
+                <th style="text-align: center;">Supprimer</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fournisseur_produit in produits_associes %}
+            <tr>
+                <td>{{ fournisseur_produit.produit.name }}</td>
+                <td>
+                    <input type="number" name="fournisseur_prix_{{ fournisseur_produit.produit.id }}" 
+                           value="{{ fournisseur_produit.price_ttc }}" step="1" min="0" required>
+                </td>
+                <td>
+                    <input type="number" name="fournisseur_stock_{{ fournisseur_produit.produit.id }}" 
+                           value="{{ fournisseur_produit.stock }}" step="1" min="0" required>
+                </td>
+                <!-- Bouton de suppression sans formulaire imbriqué -->
+                <td style="text-align: center;">
+                    <button type="submit" name="remove_fournisseur_id" value="{{ fournisseur_produit.id }}" class="btn btn-danger btn-sm">
+                        <strong>X</strong>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Ajouter de nouveaux produits</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Prix TTC</th>
+                <th>Stock initial</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for produit in produits_non_associes %}
+            <tr>
+                <td>{{ produit.name }}</td>
+                <td>
+                    <input type="number" name="new_fournisseur_prix_{{ produit.id }}" step="1" min="0">
+                </td>
+                <td>
+                    <input type="number" name="new_fournisseur_stock_{{ produit.id }}" min="0">
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-primary" name="action" value="update">Enregistrer les modifications</button>
+</form>
+{% endblock %}

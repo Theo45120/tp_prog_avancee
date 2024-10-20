@@ -1,0 +1,66 @@
+{% extends 'monapp/base.html' %}
+{% block contenu %}
+<h1> Modification d'un produit </h1>
+<form action="" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    {% if messages %}
+    <div>
+        {% for message in messages %}
+            <div class="alert alert-warning">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <h3>Fournisseurs déjà associés</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fournisseur</th>
+                <th>Prix</th>
+                <th>Stock</th>
+                <th style="text-align: center;">Supprimer</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fournisseur_produit in product.fournisseurproduit_set.all %}
+            <tr>
+                <td>{{ fournisseur_produit.fournisseur.nom }}</td>
+                <td><input type="number" name="fournisseur_prix_{{ fournisseur_produit.fournisseur.id }}" value="{{ fournisseur_produit.price_ttc }}" class="form-control" step="1"></td>
+                <td><input type="number" name="fournisseur_stock_{{ fournisseur_produit.fournisseur.id }}" value="{{ fournisseur_produit.stock }}" class="form-control"></td>
+                <td style="text-align: center;">
+                <!-- Bouton de suppression sans formulaire imbriqué -->
+                <td style="text-align: center;">
+                    <button type="submit" name="remove_fournisseur_id" value="{{ fournisseur_produit.id }}" class="btn btn-danger btn-sm">
+                        <strong>X</strong>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Ajouter des Fournisseurs</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fournisseur</th>
+                <th>Prix</th>
+                <th>Stock</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fournisseur in fournisseurs_non_associes %}
+            <tr>
+                <td>{{ fournisseur.nom }}</td>
+                <td><input type="number" name="new_fournisseur_prix_{{ fournisseur.id }}" class="form-control" step="1"></td>
+                <td><input type="number" name="new_fournisseur_stock_{{ fournisseur.id }}" class="form-control"></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-success mt-2" name="action" value="update">Modifier</button>
+</form>
+{% endblock %}
