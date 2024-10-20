@@ -543,22 +543,22 @@ class ProductAttributeValueDetailView(DetailView):
         context['titremenu'] = "Détail déclinaison"
         return context
 
-def avancer_commande(request, commande_id):
-    commande = get_object_or_404(Commande, id=commande_id)
+# def avancer_commande(request, commande_id):
+#     commande = get_object_or_404(Commande, id=commande_id)
 
-    # Si la commande est encore en préparation
-    if commande.statut == 'en_preparation':
-        commande.statut = 'passee'
-        commande.save()
-        time.sleep(5)  # Attendre 20 secondes avant de passer à l'étape suivante
+#     # Si la commande est encore en préparation
+#     if commande.statut == 'en_preparation':
+#         commande.statut = 'passee'
+#         commande.save()
+#         time.sleep(5)  # Attendre 20 secondes avant de passer à l'étape suivante
 
-    # Si la commande est passée mais pas encore reçue
-    if commande.statut == 'passee':
-        commande.statut = 'recue'
-        commande.save()
-        time.sleep(5)  # Attendre 20 secondes avant de marquer la commande comme reçue
+#     # Si la commande est passée mais pas encore reçue
+#     if commande.statut == 'passee':
+#         commande.statut = 'recue'
+#         commande.save()
+#         time.sleep(5)  # Attendre 20 secondes avant de marquer la commande comme reçue
 
-    return redirect('commande-detail', commande_id=commande.id)  # Redirige vers le détail de la commande après mise à jour
+#     return redirect('commande-detail', commande_id=commande.id)  # Redirige vers le détail de la commande après mise à jour
 
 
 ## POUR AJAX,
@@ -567,6 +567,8 @@ def actualiser_statut_commande(request, commande_id):
     # Change le statut automatiquement
     commande.changer_statut_automatiquement()
     return JsonResponse({'statut': commande.statut})
+
+
 
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(superuser_required), name='dispatch')

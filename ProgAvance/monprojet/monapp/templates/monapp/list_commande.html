@@ -29,21 +29,28 @@
 
 
 <script>
+    // Objet pour stocker les intervals par commande
+    const intervals = {};
+
     // Fonction pour actualiser le statut d'une commande
     function actualiserStatutCommande(commandeId) {
         fetch(`/monapp/commande/${commandeId}/actualiser_statut/`)
             .then(response => response.json())
             .then(data => {
                 document.getElementById(`statut_commande_${commandeId}`).innerText = data.statut;
+                // Si le statut est final, arrêter les mises à jour
+                if (data.statut === 'recue' || data.statut === 'Reçue') {
+                    clearInterval(intervals[commandeId]); // Arrête l'interval pour cette commande
+                }
             });
     }
 
     // Lancer l'actualisation périodique pour chaque commande
     function lancerActualisationPourToutesCommandes() {
         {% for commande in commandes %}
-        setInterval(function() {
+        intervals[{{ commande.id }}] = setInterval(function() {
             actualiserStatutCommande({{ commande.id }});
-        }, 2000); // 20 secondes
+        }, 5000); // Actualisation toutes les 20 secondes
         {% endfor %}
     }
 
@@ -52,5 +59,6 @@
         lancerActualisationPourToutesCommandes();
     }
 </script>
+
 
 {% endblock %}

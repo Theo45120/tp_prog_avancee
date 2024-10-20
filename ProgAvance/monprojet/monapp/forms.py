@@ -10,7 +10,7 @@ class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = '__all__'
-        exclude = ('status',)
+        exclude = ('status', 'fournisseurs')
 
 class ItemForm(forms.ModelForm):
     class Meta:

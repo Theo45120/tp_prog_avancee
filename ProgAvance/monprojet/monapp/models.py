@@ -145,9 +145,13 @@ class Commande(models.Model):
 
             # Si la commande passe de 'passee' à 'recue' et n'était pas déjà reçue
             if ancienne_commande.statut != 'recue' and self.statut == 'recue':
-                fournisseur_produit = FournisseurProduit.objects.get(produit=self.produit, fournisseur=self.fournisseur)
-                fournisseur_produit.stock += self.quantite  # Ajouter au stock uniquement quand reçue
-                fournisseur_produit.save()
+                try:
+                    fournisseur_produit = FournisseurProduit.objects.get(produit=self.produit, fournisseur=self.fournisseur)
+                    fournisseur_produit.stock += self.quantite  # Ajouter au stock uniquement quand reçue
+                    fournisseur_produit.save()
+                except FournisseurProduit.DoesNotExist:
+                    print("erreur dans la commande")
+
 
         super().save(*args, **kwargs)
 
